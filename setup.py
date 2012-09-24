@@ -3,7 +3,7 @@ from distutils.core import setup
 from setuptools import find_packages
 
 setup(name='botocross',
-      version='1.0.1',
+      version='1.0.2',
       packages=find_packages(),
       scripts=[
         'authorize-securitygroups.py',
@@ -41,6 +41,6 @@ setup(name='botocross',
       ],
       license='LICENSE',
       install_requires=[
-        "boto >= 2.5.2",
+        "boto >= 2.6.0",
       ],
       )

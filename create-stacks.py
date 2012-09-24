@@ -7,11 +7,6 @@ import logging
 log = logging.getLogger('botocross')
 from pprint import pprint
 
-# NOTE: equivalent of https://github.com/boto/boto/pull/891 until upstream release catches up.
-import patch9d3c9f0
-boto.cloudformation.regions = patch9d3c9f0.regions
-boto.cloudformation.connect_to_region = patch9d3c9f0.connect_to_region
-
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Create a CloudFormation stack in all/some available CloudFormation regions')
 parser.add_argument("stack_name", help="A stack name")

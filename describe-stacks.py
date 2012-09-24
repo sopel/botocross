@@ -7,11 +7,6 @@ import logging
 log = logging.getLogger('botocross')
 from pprint import pprint
 
-# NOTE: equivalent of https://github.com/boto/boto/pull/891 until upstream release catches up.
-import patch9d3c9f0
-boto.cloudformation.regions = patch9d3c9f0.regions
-boto.cloudformation.connect_to_region = patch9d3c9f0.connect_to_region
-
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Describe CloudFormation stacks in all/some available CloudFormation regions')
 parser.add_argument("-r", "--region", help="A region substring selector (e.g. 'us-west')")
@@ -55,7 +50,7 @@ for region in regions:
             if not args.xml:
                 print stack.stack_name
             if args.xml:
-                print stack.connection._pool.host_to_pool.values()[0].queue[0][0]._HTTPConnection__response._cached_response.replace("xmlns=\"http://cloudformation.amazonaws.com/doc/2010-05-15/\"","")
+                print stack.connection._pool.host_to_pool.values()[0].queue[0][0]._HTTPConnection__response._cached_response.replace("xmlns=\"http://cloudformation.amazonaws.com/doc/2010-05-15/\"", "")
             if args.verbose:
                 pprint(vars(stack), indent=2)
             log.debug(vars(stack))
