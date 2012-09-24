@@ -1,5 +1,5 @@
 import logging
-s3_log = logging.getLogger('boto_cli.s3')
+s3_log = logging.getLogger('botocross.s3')
 
 RegionMap = {
     'DEFAULT': 'us-east-1',

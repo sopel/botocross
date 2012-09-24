@@ -2,9 +2,9 @@
 import argparse
 import boto
 import boto.cloudformation
-from boto_cli import configure_logging
+from botocross import configure_logging
 import logging
-log = logging.getLogger('boto_cli')
+log = logging.getLogger('botocross')
 from pprint import pprint
 
 # NOTE: equivalent of https://github.com/boto/boto/pull/891 until upstream release catches up.
@@ -51,7 +51,7 @@ if args.region:
     heading += " (filtered by region '" + args.region + "')"
     regions = filter(isSelected, regions)
 
-from boto_cli.iam.accountinfo import AccountInfo
+from botocross.iam.accountinfo import AccountInfo
 iam = boto.connect_iam(**credentials)
 accountInfo = AccountInfo(iam)
 account = accountInfo.describe()

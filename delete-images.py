@@ -2,10 +2,10 @@
 import argparse
 import boto
 import boto.ec2
-from boto_cli import configure_logging
-from boto_cli.ec2 import *
+from botocross import configure_logging
+from botocross.ec2 import *
 import logging
-log = logging.getLogger('boto_cli')
+log = logging.getLogger('botocross')
 from pprint import pprint
 
 # configure command line argument parsing

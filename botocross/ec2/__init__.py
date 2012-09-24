@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 from operator import attrgetter
-ec2_log = logging.getLogger('boto_cli.ec2')
+ec2_log = logging.getLogger('botocross.ec2')
 
 DEFAULT_BACKUP_SET = "default"
 CREATED_BY_BOTO_EBS_SNAPSHOT_SCRIPT_SIGNATURE = "Created by Boto EBS Snapshot Script from ";

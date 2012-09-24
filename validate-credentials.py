@@ -1,12 +1,12 @@
 #!/usr/bin/python
 import argparse
 import boto
-from boto_cli import configure_logging
-from boto_cli import ExitCodes
-from boto_cli.iam.accountinfo import AccountInfo
-from boto_cli.iam.userinfo import UserInfo
+from botocross import configure_logging
+from botocross import ExitCodes
+from botocross.iam.accountinfo import AccountInfo
+from botocross.iam.userinfo import UserInfo
 import logging
-log = logging.getLogger('boto_cli')
+log = logging.getLogger('botocross')
 import sys
 
 # configure command line argument parsing
