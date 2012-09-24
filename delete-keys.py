@@ -3,11 +3,11 @@ import argparse
 import boto
 import boto.s3
 from boto.s3.connection import Location
-from boto_cli import configure_logging
-from boto_cli.s3 import class_iterator
-from boto_cli.s3 import RegionMap
+from botocross import configure_logging
+from botocross.s3 import class_iterator
+from botocross.s3 import RegionMap
 import logging
-log = logging.getLogger('boto_cli')
+log = logging.getLogger('botocross')
 from pprint import pprint
 
 # configure command line argument parsing

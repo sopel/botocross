@@ -1,5 +1,5 @@
 import logging
-boto_cli_log = logging.getLogger('boto_cli')
+botocross_log = logging.getLogger('botocross')
 
 def configure_logging(logger, level):
     logger.setLevel(getattr(logging, level.upper()))

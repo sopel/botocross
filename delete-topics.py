@@ -18,7 +18,7 @@ def isSelected(region):
     return True if region.name.find(args.region) != -1 else False
 
 def createTopicArn(region_name, topic_name):
-    from boto_cli.iam.accountinfo import AccountInfo
+    from botocross.iam.accountinfo import AccountInfo
     iam = boto.connect_iam(**credentials)
     accountInfo = AccountInfo(iam)
     account = accountInfo.describe()

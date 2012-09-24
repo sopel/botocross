@@ -2,10 +2,10 @@
 import argparse
 import boto
 import boto.cloudformation
-from boto_cli import configure_logging
-from boto_cli import ExitCodes
+from botocross import configure_logging
+from botocross import ExitCodes
 import logging
-log = logging.getLogger('boto_cli')
+log = logging.getLogger('botocross')
 from pprint import pprint
 import sys
 
