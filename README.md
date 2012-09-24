@@ -1,5 +1,7 @@
 # botocross
 
+A Python package for operating cross region AWS resources.
+
 ## Introduction
 
 Botocross is a Python package extending the excellent [boto](https://github.com/boto/boto) with functionality for operating cross region AWS resources - currently it is comprised of:
@@ -27,8 +29,10 @@ The scripts are based on [Python 2.7](http://python.org/) and have the following
 
 Install via [pip](http://www.pip-installer.org/):
 
+**NOTE**: botocross is not yet published to PyPI, please use _Install from source_ below)
+
 ```sh
-$ pip install boto
+$ pip install botocross
 ```
 
 Install from source:
@@ -49,3 +53,7 @@ see section [Getting Started with Boto](https://github.com/boto/boto#getting-sta
 
 * The `validate-credentials` script provides a convenience method to both validate the AWS credentials and 
 display respective account/user information, which helps when juggling multiple AWS accounts.
+
+# License
+ 
+Licensed under the Apache License, Version 2.0, see LICENSE for details.
