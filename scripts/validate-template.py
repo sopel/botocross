@@ -9,11 +9,6 @@ log = logging.getLogger('botocross')
 from pprint import pprint
 import sys
 
-# NOTE: equivalent of https://github.com/boto/boto/pull/891 until upstream release catches up.
-import patch9d3c9f0
-boto.cloudformation.regions = patch9d3c9f0.regions
-boto.cloudformation.connect_to_region = patch9d3c9f0.connect_to_region
-
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Validates a CloudFormation stack template')
 parser.add_argument("template", help="A stack template local file or a S3 URL. Substitutions for {REGION} and {ACCOUNT} are available to support S3 URL construction.")
