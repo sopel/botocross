@@ -33,5 +33,5 @@ try:
     print "User name is '" + user.name + "' with id " + user.id
     print "Account alias is '" + account.alias + "' with id " + account.id
 except boto.exception.BotoServerError, e:
-    log.error(e.error_message)
+    log.exception(e)
     sys.exit(ExitCodes.FAIL)

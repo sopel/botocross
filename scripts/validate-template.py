@@ -65,5 +65,5 @@ try:
         template = cfn.validate_template(template_body=template_body)
         printResult(args.template, template)
 except boto.exception.BotoServerError, e:
-    log.error(e.error_message)
+    log.exception(e)
     sys.exit(ExitCodes.FAIL)
