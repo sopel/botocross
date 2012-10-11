@@ -56,4 +56,4 @@ display respective account/user information, which helps when juggling multiple 
 
 # License
  
-Licensed under the Apache License, Version 2.0, see LICENSE for details.
+Licensed under the MIT License (MIT), see LICENSE for details.

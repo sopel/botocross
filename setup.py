@@ -2,8 +2,14 @@
 from distutils.core import setup
 from setuptools import find_packages
 
-setup(name='botocross',
-      version='1.0.5',
+if sys.version_info <= (2, 6):
+    error = "ERROR: botocross requires Python Version 2.7 or above...exiting."
+    print >> sys.stderr, error
+    sys.exit(1)
+
+setup(name="botocross",
+      version="1.0.6",
+      author = "Steffen Opel",
       packages=find_packages(),
       scripts=[
         'scripts/authorize-securitygroups.py',
@@ -39,8 +45,19 @@ setup(name='botocross',
         'scripts/validate-credentials.py',
         'scripts/validate-template.py',
       ],
-      license='LICENSE',
+      license="MIT",
+      platforms = "Posix; MacOS X; Windows",
       install_requires=[
         "boto >= 2.6.0",
       ],
+      classifiers=[
+          "Development Status :: 4 - Beta",
+          "Intended Audience :: Developers",
+          "Intended Audience :: System Administrators",
+          "License :: OSI Approved :: MIT License",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python :: 2",
+          "Programming Language :: Python :: 2.7",
+          "Topic :: Internet",
+          ],
       )
