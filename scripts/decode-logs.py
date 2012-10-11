@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2012 David Laing http://davidlaing.com/
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
