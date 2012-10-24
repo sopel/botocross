@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from distutils.core import setup
 from setuptools import find_packages
+import sys
 
 if sys.version_info <= (2, 6):
     error = "ERROR: botocross requires Python Version 2.7 or above...exiting."
