@@ -1,6 +1,6 @@
 # botocross
 
-A Python package for operating cross region AWS resources.
+A Python package for operating cross region Amazon Web Services (AWS) resources.
 
 ## Introduction
 
@@ -29,7 +29,7 @@ The scripts are based on [Python 2.7](http://python.org/) and have the following
 
 Install via [pip](http://www.pip-installer.org/) from PyPI:
 
-**NOTE**: botocross is not yet published to PyPI, please use _Install from GitHub_ or _Install from source_ below)
+**NOTE**: botocross is not yet published to PyPI, please use _Install from GitHub_ or _Install from source_ below).
 
 ```sh
 $ pip install botocross
