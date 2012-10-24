@@ -27,12 +27,18 @@ The scripts are based on [Python 2.7](http://python.org/) and have the following
 
 ## Installation
 
-Install via [pip](http://www.pip-installer.org/):
+Install via [pip](http://www.pip-installer.org/) from PyPI:
 
-**NOTE**: botocross is not yet published to PyPI, please use _Install from source_ below)
+**NOTE**: botocross is not yet published to PyPI, please use _Install from GitHub_ or _Install from source_ below)
 
 ```sh
 $ pip install botocross
+```
+
+Install via [pip](http://www.pip-installer.org/) from GitHub:
+
+```sh
+$ pip install git+https://github.com/sopel/botocross.git
 ```
 
 Install from source:
