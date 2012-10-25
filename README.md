@@ -2,6 +2,9 @@
 
 A Python package for operating cross region Amazon Web Services (AWS) resources.
 
+## Status
+[![Build Status](https://secure.travis-ci.org/sopel/botocross.png?branch=master)](http://travis-ci.org/sopel/botocross)
+
 ## Introduction
 
 Botocross is a Python package extending the excellent [boto](https://github.com/boto/boto) with functionality for operating cross region AWS resources - currently it is comprised of:
