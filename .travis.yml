@@ -9,3 +9,7 @@ install:
 
 # command to run tests
 script: nosetests
+
+notifications:
+  flowdock:
+    - secure: "kgOTXIpYHHiM+mdsbtiHb3EqfTQ4FCzdkAwEwvOLv3bWRyK4uphPMFkihYY5\nvGpoiEdP3Ql5eaTTeAoewSI+Z+fo1sYtyRfgcLEaKk4/L8Q98VECIeTx7NBY\nFExw251GyqecQBDTZ7GnmpP2AoV6t8BdL/qTiRshUSOC0lh1V/Y="
