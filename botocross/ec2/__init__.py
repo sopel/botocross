@@ -25,8 +25,8 @@ from operator import attrgetter
 ec2_log = logging.getLogger('botocross.ec2')
 
 DEFAULT_BACKUP_SET = "default"
-CREATED_BY_BOTO_EBS_SNAPSHOT_SCRIPT_SIGNATURE = "Created by Boto EBS Snapshot Script from ";
-CREATED_BY_BOTO_EC2_IMAGE_SCRIPT_SIGNATURE = "Created by Boto EC2 Image Script from ";
+CREATED_BY_BOTO_EBS_SNAPSHOT_SCRIPT_SIGNATURE = "Created by Boto EBS Snapshot Script from "
+CREATED_BY_BOTO_EC2_IMAGE_SCRIPT_SIGNATURE = "Created by Boto EC2 Image Script from "
 TAG_NAME = "Name"
 TAG_BACKUP_POLICY = "Backup Policy"
 
@@ -34,7 +34,7 @@ def derive_name(ec2, resource_id, iso_datetime=None, id_only=False):
     if not iso_datetime:
         iso_datetime = datetime.utcnow()
 
-    name = resource_id;
+    name = resource_id
     if not id_only:
         filters = { "resource-id": resource_id}
         tags = ec2.get_all_tags(filters=filters)
@@ -42,8 +42,8 @@ def derive_name(ec2, resource_id, iso_datetime=None, id_only=False):
             if tag.name == TAG_NAME and tag.value:
                 name = tag.value
 
-    name += "." + iso_datetime.strftime("%Y%m%dT%H%M%SZ");
-    return name;
+    name += "." + iso_datetime.strftime("%Y%m%dT%H%M%SZ")
+    return name
 
 def create_snapshots(ec2, volumes, backup_set, description):
     log = ec2_log
@@ -106,7 +106,7 @@ def delete_images(ec2, reservations, backup_set, backup_retention, no_origin_saf
             log.info("Deregistering images of " + instance.id + " (set '" + backup_set + "', " + str(len(images)) + " available, retaining " + str(backup_retention) + "):")
             # While images are apparently returned in oldest to youngest order, this isn't documented;
             # therefore an explicit sort is performed to ensure this regardless.
-            num_images = len(images);
+            num_images = len(images)
             for image in sorted(images, key=attrgetter('name')):
                 log.debug(image.name)
                 if num_images <= backup_retention:
