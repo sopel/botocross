@@ -20,15 +20,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from botocross import ExitCodes, configure_logging
+from pprint import pprint
 import argparse
 import boto
 import boto.cloudformation
-from botocross import configure_logging
-from botocross import ExitCodes
 import logging
-log = logging.getLogger('botocross')
-from pprint import pprint
 import sys
+log = logging.getLogger('botocross')
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Validates a CloudFormation stack template')
@@ -36,7 +35,7 @@ parser.add_argument("template", help="A stack template local file or a S3 URL. S
 parser.add_argument("-r", "--region", help="A region substring selector (e.g. 'us-west')")
 parser.add_argument("--access_key_id", dest='aws_access_key_id', help="Your AWS Access Key ID")
 parser.add_argument("--secret_access_key", dest='aws_secret_access_key', help="Your AWS Secret Access Key")
-parser.add_argument("-v", "--verbose", action='store_true') # TODO: drop in favor of a log formatter?!
+parser.add_argument("-v", "--verbose", action='store_true')  # TODO: drop in favor of a log formatter?!
 parser.add_argument("-l", "--log", dest='log_level', default='WARNING',
                     choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                     help="The logging level to use. [default: WARNING]")
@@ -74,7 +73,7 @@ try:
             pprint(region.name, indent=2)
             cfn = boto.connect_cloudformation(region=region, **credentials)
             template_url = processArgument(args.template, region.name)
-            # handle S3 legacy issue regarding region 'US Standard', see e.g. https://forums.aws.amazon.com/message.jspa?messageID=185820  
+            # handle S3 legacy issue regarding region 'US Standard', see e.g. https://forums.aws.amazon.com/message.jspa?messageID=185820
             if region.name == 'us-east-1':
                 template_url = template_url.replace('-us-east-1', '', 1)
             template = cfn.validate_template(template_url=template_url)

@@ -20,15 +20,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-import argparse
-import boto
-from botocross import configure_logging
-from botocross import ExitCodes
+from botocross import ExitCodes, configure_logging
 from botocross.iam.accountinfo import AccountInfo
 from botocross.iam.userinfo import UserInfo
+import argparse
+import boto
 import logging
-log = logging.getLogger('botocross')
 import sys
+log = logging.getLogger('botocross')
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Validates AWS credentials and display account/user information')

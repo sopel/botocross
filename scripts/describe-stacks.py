@@ -20,13 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from botocross import configure_logging
+from pprint import pprint
 import argparse
 import boto
 import boto.cloudformation
-from botocross import configure_logging
 import logging
 log = logging.getLogger('botocross')
-from pprint import pprint
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Describe CloudFormation stacks in all/some available CloudFormation regions')
@@ -35,7 +35,7 @@ parser.add_argument("-s", "--stack_name_or_id", default='', help="Name or id (AR
 parser.add_argument("--xml", action='store_true', help="Return result as XML")
 parser.add_argument("--access_key_id", dest='aws_access_key_id', help="Your AWS Access Key ID")
 parser.add_argument("--secret_access_key", dest='aws_secret_access_key', help="Your AWS Secret Access Key")
-parser.add_argument("-v", "--verbose", action='store_true') # TODO: drop in favor of a log formatter?!
+parser.add_argument("-v", "--verbose", action='store_true')  # TODO: drop in favor of a log formatter?!
 parser.add_argument("-l", "--log", dest='log_level', default='WARNING',
                     choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                     help="The logging level to use. [default: WARNING]")

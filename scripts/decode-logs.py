@@ -20,10 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-import argparse
-import base64
 from StringIO import StringIO
 from gzip import GzipFile
+import argparse
+import base64
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Decode a base64 encoded gzipped file')

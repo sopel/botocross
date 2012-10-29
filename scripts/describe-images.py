@@ -20,20 +20,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from botocross import configure_logging
+from pprint import pprint
 import argparse
 import boto
 import boto.ec2
-from botocross import configure_logging
 import logging
 log = logging.getLogger('botocross')
-from pprint import pprint
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Describe EC2 images in all/some available EC2 regions')
 parser.add_argument("-f", "--filter", action="append", help="An EC2 image filter. [can be used multiple times]")
 parser.add_argument("-i", "--id", dest="resource_ids", action="append", help="An EC2 image id. [can be used multiple times]")
 parser.add_argument("-r", "--region", help="A region substring selector (e.g. 'us-west')")
-parser.add_argument("-v", "--verbose", action='store_true', help="Include volume details") # TODO: drop in favor of a log formatter?!
+parser.add_argument("-v", "--verbose", action='store_true', help="Include volume details")  # TODO: drop in favor of a log formatter?!
 parser.add_argument("--access_key_id", dest='aws_access_key_id', help="Your AWS Access Key ID")
 parser.add_argument("--secret_access_key", dest='aws_secret_access_key', help="Your AWS Secret Access Key")
 parser.add_argument("-l", "--log", dest='log_level', default='WARNING',
@@ -46,7 +46,7 @@ configure_logging(log, args.log_level)
 def isSelected(region):
     return True if region.name.find(args.region) != -1 else False
 
-# execute business logic    
+# execute business logic
 credentials = {'aws_access_key_id': args.aws_access_key_id, 'aws_secret_access_key': args.aws_secret_access_key}
 heading = "Describing EBS images"
 regions = boto.ec2.regions()

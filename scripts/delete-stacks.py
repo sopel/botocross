@@ -20,13 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from botocross import configure_logging
+from pprint import pprint
 import argparse
 import boto
 import boto.cloudformation
-from botocross import configure_logging
 import logging
 log = logging.getLogger('botocross')
-from pprint import pprint
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Delete a CloudFormation stack in all/some available CloudFormation regions')

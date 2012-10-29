@@ -20,10 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from pprint import pprint
 import argparse
 import boto
 import boto.ec2
-from pprint import pprint
 
 # TODO: enable cross account usage via src_security_group_owner_id?
 def authorizeSource():
@@ -53,7 +53,7 @@ parser_source = subparsers.add_parser('group', help='Authorize by security group
 source_group = parser_source.add_mutually_exclusive_group(required=True)
 source_group.add_argument("--security_group_name", help="The name of the security group you are granting access to")
 source_group.add_argument("--security_group_id", help="The id of the security group you are granting access to")
-#parser_source.add_argument("--security_group_owner_id", required=True, help="The ID of the owner of the security group you are granting access to")
+# parser_source.add_argument("--security_group_owner_id", required=True, help="The ID of the owner of the security group you are granting access to")
 parser_source.set_defaults(func=authorizeSource)
 # sub-command 'ip'
 parser_ip = subparsers.add_parser('cidr', help='Authorize by CIDR address')

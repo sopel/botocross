@@ -20,10 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from pprint import pprint
 import argparse
 import boto
 import boto.ec2
-from pprint import pprint
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Describe EC2 security groups in all/some available EC2 regions')

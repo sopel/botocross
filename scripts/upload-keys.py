@@ -20,18 +20,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from boto.s3.connection import Location
+from boto.s3.key import Key
+from botocross import configure_logging
+from botocross.s3 import RegionMap, class_iterator
+from pprint import pprint
 import argparse
 import boto
 import boto.s3
-from boto.s3.key import Key
-from boto.s3.connection import Location
-from botocross import configure_logging
-from botocross.s3 import class_iterator
-from botocross.s3 import RegionMap
 import logging
-log = logging.getLogger('botocross')
-from pprint import pprint
 import os
+log = logging.getLogger('botocross')
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Upload a file to a S3 bucket in all/some available S3 regions')

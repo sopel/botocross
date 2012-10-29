@@ -20,14 +20,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from botocross import configure_logging
+from botocross.ec2 import *
+from pprint import pprint
 import argparse
 import boto
 import boto.ec2
-from botocross import configure_logging
-from botocross.ec2 import *
 import logging
 log = logging.getLogger('botocross')
-from pprint import pprint
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Delete snapshots of EBS volumes in all/some available EC2 regions')
@@ -49,7 +49,7 @@ configure_logging(log, args.log_level)
 def isSelected(region):
     return True if region.name.find(args.region) != -1 else False
 
-# execute business logic    
+# execute business logic
 credentials = {'aws_access_key_id': args.aws_access_key_id, 'aws_secret_access_key': args.aws_secret_access_key}
 heading = "Deleting EBS snapshots"
 regions = boto.ec2.regions()

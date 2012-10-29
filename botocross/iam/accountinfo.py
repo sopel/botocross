@@ -20,7 +20,6 @@
 # IN THE SOFTWARE.
 
 import boto
-import boto.iam
 import logging
 
 class AccountInfo:
@@ -44,7 +43,7 @@ class AccountInfo:
             alias = self.connection.get_account_alias()
             self.alias = alias['list_account_aliases_response']['list_account_aliases_result']['account_aliases'][0]
         except boto.exception.BotoServerError, e:
-            # NOTE: given some information can be deduced from the exception still, the lack of permissions is 
+            # NOTE: given some information can be deduced from the exception still, the lack of permissions is
             # considered a normal condition still and the exception handled/logged accordingly.
             # TODO: Identify proper exception code for this condition (rather than raising InvalidClientTokenId only).
             if e.error_code == 'InvalidClientTokenId':
@@ -59,8 +58,8 @@ class AccountInfo:
                 self.user = userInfo.describe()
             self.id = self.user.arn.replace('arn:aws:iam::', '').partition(':')[0]
         except boto.exception.BotoServerError, e:
-            # NOTE: given some information can be deduced from the exception still, the lack of permissions is 
-            # considered a normal condition still and the exception handled/logged accordingly. 
+            # NOTE: given some information can be deduced from the exception still, the lack of permissions is
+            # considered a normal condition still and the exception handled/logged accordingly.
             # TODO: Identify proper exception code for this condition (rather than raising InvalidClientTokenId only).
             if e.error_code == 'InvalidClientTokenId':
                 raise
@@ -69,7 +68,7 @@ class AccountInfo:
         self.log.debug(self)
         return self
 
-# Sample exercise of class functionality (requires AWS credentials to be provided externally) 
+# Sample exercise of class functionality (requires AWS credentials to be provided externally)
 if __name__ == "__main__":
     try:
         iam = boto.connect_iam()

@@ -20,10 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from botocross import configure_logging
 import argparse
 import boto
 import boto.ec2
-from botocross import configure_logging
 import logging
 log = logging.getLogger('botocross')
 
@@ -43,7 +43,7 @@ configure_logging(log, args.log_level)
 def isSelected(region):
     return True if region.name.find(args.region) != -1 else False
 
-# execute business logic    
+# execute business logic
 credentials = {'aws_access_key_id': args.aws_access_key_id, 'aws_secret_access_key': args.aws_secret_access_key}
 heading = "Describing AWS resource tags"
 regions = boto.ec2.regions()

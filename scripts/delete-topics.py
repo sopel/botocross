@@ -20,10 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from pprint import pprint
 import argparse
 import boto
 import boto.sns
-from pprint import pprint
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Delete a SNS topic in all/some available SNS regions')

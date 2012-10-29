@@ -20,8 +20,8 @@
 # IN THE SOFTWARE.
 
 from datetime import datetime
-import logging
 from operator import attrgetter
+import logging
 ec2_log = logging.getLogger('botocross.ec2')
 
 DEFAULT_BACKUP_SET = "default"
