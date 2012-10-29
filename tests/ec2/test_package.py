@@ -25,5 +25,5 @@ import unittest
 class EC2PackageTest(unittest.TestCase):
 
     def test_constants(self):
-	self.assertEquals(botocross.ec2.CREATED_BY_BOTO_EBS_SNAPSHOT_SCRIPT_SIGNATURE, "Created by Boto EBS Snapshot Script from ", "Changing the signature breaks existing backups!")
-	self.assertEquals(botocross.ec2.CREATED_BY_BOTO_EC2_IMAGE_SCRIPT_SIGNATURE, "Created by Boto EC2 Image Script from ", "Changing the signature breaks existing backups!")
+        self.assertEquals(botocross.ec2.CREATED_BY_BOTO_EBS_SNAPSHOT_SCRIPT_SIGNATURE, "Created by Boto EBS Snapshot Script from ", "Changing the signature breaks existing backups!")
+        self.assertEquals(botocross.ec2.CREATED_BY_BOTO_EC2_IMAGE_SCRIPT_SIGNATURE, "Created by Boto EC2 Image Script from ", "Changing the signature breaks existing backups!")

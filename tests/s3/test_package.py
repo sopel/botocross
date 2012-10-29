@@ -24,6 +24,6 @@ import unittest
 class S3PackageTest(unittest.TestCase):
 
     def test_region_map(self):
-	from botocross.s3 import RegionMap
-	
-	self.assertTrue(7 == len(RegionMap))
+        from botocross.s3 import RegionMap
+
+        self.assertTrue(7 == len(RegionMap))

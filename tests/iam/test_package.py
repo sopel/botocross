@@ -24,4 +24,4 @@ import unittest
 class IAMPackageTest(unittest.TestCase):
 
     def test_region_map(self):
-	self.assertTrue(True)
+        self.assertTrue(True)
