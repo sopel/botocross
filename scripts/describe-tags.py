@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-from botocross import configure_logging
+from botocross import configure_logging, build_filter_params
 import argparse
 import boto
 import boto.ec2
@@ -51,11 +51,7 @@ if args.region:
     heading += " (filtered by region '" + args.region + "')"
     regions = filter(isSelected, regions)
 
-filters = None
-if args.filter:
-    filters = dict([filter.split('=') for filter in args.filter])
-log.info(args.filter)
-log.debug(filters)
+filters = build_filter_params(args.filter)
 
 print heading + ":"
 for region in regions:

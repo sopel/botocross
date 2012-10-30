@@ -20,10 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from botocross import configure_logging, build_filter_params
 from pprint import pprint
 import argparse
 import boto
 import boto.ec2
+import logging
+log = logging.getLogger('botocross')
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Describe EC2 security groups in all/some available EC2 regions')
@@ -33,14 +36,18 @@ parser.add_argument("-lr", "--rules", action="store_true", help="List all rules 
 parser.add_argument("-r", "--region", help="A region substring selector (e.g. 'us-west')")
 parser.add_argument("--access_key_id", dest='aws_access_key_id', help="Your AWS Access Key ID")
 parser.add_argument("--secret_access_key", dest='aws_secret_access_key', help="Your AWS Secret Access Key")
+parser.add_argument("-l", "--log", dest='log_level', default='WARNING',
+                    choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                    help="The logging level to use. [default: WARNING]")
 args = parser.parse_args()
 
-credentials = {'aws_access_key_id': args.aws_access_key_id, 'aws_secret_access_key': args.aws_secret_access_key}
+configure_logging(log, args.log_level)
 
 def isSelected(region):
     return True if region.name.find(args.region) != -1 else False
 
 # execute business logic
+credentials = {'aws_access_key_id': args.aws_access_key_id, 'aws_secret_access_key': args.aws_secret_access_key}
 heading = "Describing EC2 security groups"
 regions = boto.ec2.regions()
 if args.region:
@@ -50,7 +57,7 @@ if args.filter:
     for filter in args.filter:
         heading += " (filtered by filter '" + filter + "')"
 
-filters = dict([filter.split('=') for filter in args.filter]) if args.filter else None
+filters = build_filter_params(args.filter)
 
 print heading + ":"
 for region in regions:
