@@ -20,17 +20,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-from botocross import configure_logging
 from botocross.iam.accountinfo import AccountInfo
 from pprint import pprint
 import argparse
 import boto
 import boto.cloudformation
+import botocross as bc
 import logging
-log = logging.getLogger('botocross')
 
 # configure command line argument parsing
-parser = argparse.ArgumentParser(description='Create a CloudFormation stack in all/some available CloudFormation regions')
+parser = argparse.ArgumentParser(description='Create a CloudFormation stack in all/some available CloudFormation regions',
+                                 parents=[bc.build_region_parser(), bc.build_common_parser()])
 parser.add_argument("stack_name", help="A stack name")
 parser.add_argument("template", help="A stack template, either a local file or a S3 URL. Substitutions for {REGION} and {ACCOUNT} are available to support S3 URL construction.")
 parser.add_argument("-p", "--parameter", action="append", help="A (key,value) pair for a template input parameter. Substitutions for {REGION} and {ACCOUNT} are available to e.g. support ARN construction. [can be used multiple times]")
@@ -39,18 +39,13 @@ parser.add_argument("-d", "--disable_rollback", action="store_true", help="Indic
 parser.add_argument("-t", "--timeout", type=int, help="Maximum amount of time to let the Stack spend creating itself. If this timeout is exceeded, the Stack will enter the CREATE_FAILED state.")
 parser.add_argument("-i", "--enable_iam", action="store_true", help="Enable 'CAPABILITY_IAM'. [default: false]")
 # parser.add_argument("-c", "--cababilities", help="The list of capabilities you want to allow in the stack. Currently, the only valid capability is 'CAPABILITY_IAM'")
-parser.add_argument("-r", "--region", help="A region substring selector (e.g. 'us-west')")
-parser.add_argument("--access_key_id", dest='aws_access_key_id', help="Your AWS Access Key ID")
-parser.add_argument("--secret_access_key", dest='aws_secret_access_key', help="Your AWS Secret Access Key")
-parser.add_argument("-l", "--log", dest='log_level', default='WARNING',
-                    choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-                    help="The logging level to use. [default: WARNING]")
 args = parser.parse_args()
 
-configure_logging(log, args.log_level)
-
-def isSelected(region):
-    return True if region.name.find(args.region) != -1 else False
+# process common command line arguments
+log = logging.getLogger('botocross')
+bc.configure_logging(log, args.log_level)
+credentials = bc.parse_credentials(args)
+regions = bc.filter_regions(boto.cloudformation.regions(), args.region)
 
 def processParameter(parameter, region_name, account_id):
     replacement = parameter[1].replace('{REGION}', region_name).replace('{ACCOUNT}', account_id)
@@ -61,12 +56,7 @@ def processArgument(argument, region_name, account_id):
     return argument.replace('{REGION}', region_name).replace('{ACCOUNT}', account_id)
 
 # execute business logic
-credentials = {'aws_access_key_id': args.aws_access_key_id, 'aws_secret_access_key': args.aws_secret_access_key}
-heading = "Updating CloudFormation stacks named '" + args.stack_name + "'"
-regions = boto.cloudformation.regions()
-if args.region:
-    heading += " (filtered by region '" + args.region + "')"
-    regions = filter(isSelected, regions)
+log.info("Updating CloudFormation stacks named '" + args.stack_name + "':")
 
 iam = boto.connect_iam(**credentials)
 accountInfo = AccountInfo(iam)
@@ -84,7 +74,6 @@ capabilities = []
 if args.enable_iam:
     capabilities.append('CAPABILITY_IAM')
 
-print heading + ":"
 for region in regions:
     pprint(region.name, indent=2)
     try:

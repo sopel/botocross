@@ -21,43 +21,32 @@
 # IN THE SOFTWARE.
 
 from boto.s3.connection import Location
-from botocross import configure_logging
 from botocross.s3 import RegionMap, class_iterator
 from pprint import pprint
 import argparse
 import boto
 import boto.s3
+import botocross as bc
 import logging
-log = logging.getLogger('botocross')
 
 # configure command line argument parsing
-parser = argparse.ArgumentParser(description='Dump the contents of files in a bucket to STDOUT across all/some available S3 regions')
+parser = argparse.ArgumentParser(description='Dump the contents of files in a bucket to STDOUT across all/some available S3 regions',
+                                 parents=[bc.build_region_parser(), bc.build_common_parser()])
 parser.add_argument("bucket", help="A bucket name")
 parser.add_argument("-p", "--prefix", default="", help="The prefix of the file in the bucket (similar to a subfolder)")
-parser.add_argument("-r", "--region", default="us-east-1", help="A region substring selector (e.g. 'us-west')")
-parser.add_argument("--access_key_id", dest='aws_access_key_id', help="Your AWS Access Key ID")
-parser.add_argument("--secret_access_key", dest='aws_secret_access_key', help="Your AWS Secret Access Key")
-parser.add_argument("-l", "--log", dest='log_level', default='WARNING',
-                    choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-                    help="The logging level to use. [default: WARNING]")
 args = parser.parse_args()
 
-configure_logging(log, args.log_level)
-
-def isSelected(region):
-    return True if RegionMap[region].find(args.region) != -1 else False
+# process common command line arguments
+log = logging.getLogger('botocross')
+bc.configure_logging(log, args.log_level)
+credentials = bc.parse_credentials(args)
+locations = bc.filter_regions_s3(class_iterator(Location), args.region)
 
 # execute business logic
-credentials = {'aws_access_key_id': args.aws_access_key_id, 'aws_secret_access_key': args.aws_secret_access_key}
-heading = "Reading S3 buckets named '" + args.bucket + "'"
-locations = class_iterator(Location)
-if args.region:
-    heading += " (filtered by region '" + args.region + "')"
-    locations = filter(isSelected, locations)
+log.info("Reading S3 buckets named '" + args.bucket + "':")
 
 s3 = boto.connect_s3(**credentials)
 
-print heading + ":"
 for location in locations:
     region = RegionMap[location]
     pprint(region, indent=2)

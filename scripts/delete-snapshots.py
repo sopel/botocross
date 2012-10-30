@@ -20,50 +20,38 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-from botocross import configure_logging, build_filter_params
 from botocross.ec2 import *
 from pprint import pprint
 import argparse
 import boto
 import boto.ec2
+import botocross as bc
 import logging
-log = logging.getLogger('botocross')
 
 # configure command line argument parsing
-parser = argparse.ArgumentParser(description='Delete snapshots of EBS volumes in all/some available EC2 regions')
+parser = argparse.ArgumentParser(description='Delete snapshots of EBS volumes in all/some available EC2 regions',
+                                 parents=[bc.build_region_parser(), bc.build_common_parser()])
 parser.add_argument("-f", "--filter", action="append", help="An EBS volume filter. [can be used multiple times]")
 parser.add_argument("-i", "--id", dest="resource_ids", action="append", help="An EBS volume id. [can be used multiple times]")
 parser.add_argument("-br", "--backup_retention", type=int, default=1, help="The number of backups to retain (correlated via backup_set). [default: 1]")
 parser.add_argument("-bs", "--backup_set", default=DEFAULT_BACKUP_SET, help="A backup set name (determines retention correlation). [default: 'default']")
 parser.add_argument("-ns", "--no_origin_safeguard", action="store_true", help="Allow deletion of snapshots originating from other tools. [default: False]")
-parser.add_argument("-r", "--region", help="A region substring selector (e.g. 'us-west')")
-parser.add_argument("--access_key_id", dest='aws_access_key_id', help="Your AWS Access Key ID")
-parser.add_argument("--secret_access_key", dest='aws_secret_access_key', help="Your AWS Secret Access Key")
-parser.add_argument("-l", "--log", dest='log_level', default='WARNING',
-                    choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-                    help="The logging level to use. [default: WARNING]")
 args = parser.parse_args()
 
-configure_logging(log, args.log_level)
-
-def isSelected(region):
-    return True if region.name.find(args.region) != -1 else False
+# process common command line arguments
+log = logging.getLogger('botocross')
+bc.configure_logging(log, args.log_level)
+credentials = bc.parse_credentials(args)
+regions = bc.filter_regions(boto.ec2.regions(), args.region)
+filters = bc.build_filter_params(args.filter)
+log.info(args.resource_ids)
 
 # execute business logic
-credentials = {'aws_access_key_id': args.aws_access_key_id, 'aws_secret_access_key': args.aws_secret_access_key}
-heading = "Deleting EBS snapshots"
-regions = boto.ec2.regions()
-if args.region:
-    heading += " (filtered by region '" + args.region + "')"
-    regions = filter(isSelected, regions)
-
-filters = build_filter_params(args.filter)
-log.info(args.resource_ids)
+log.info("Deleting EBS snapshots")
 
 backup_set = args.backup_set if args.backup_set else DEFAULT_BACKUP_SET
 log.debug(backup_set)
 
-print heading + ":"
 for region in regions:
     try:
         ec2 = boto.connect_ec2(region=region, **credentials)

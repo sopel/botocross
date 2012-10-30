@@ -24,29 +24,25 @@ from pprint import pprint
 import argparse
 import boto
 import boto.sns
+import botocross as bc
+import logging
 
 # configure command line argument parsing
-parser = argparse.ArgumentParser(description='Create a SNS topic in all/some available SNS regions')
+parser = argparse.ArgumentParser(description='Create a SNS topic in all/some available SNS regions',
+                                 parents=[bc.build_region_parser(), bc.build_common_parser()])
 parser.add_argument("topic", help="A topic name")
 parser.add_argument("-d", "--display_name", help="Override the topics display name (will get region suffix) [default: topic name]")
-parser.add_argument("-r", "--region", help="A region substring selector (e.g. 'us-west')")
-parser.add_argument("--access_key_id", dest='aws_access_key_id', help="Your AWS Access Key ID")
-parser.add_argument("--secret_access_key", dest='aws_secret_access_key', help="Your AWS Secret Access Key")
 args = parser.parse_args()
 
-credentials = {'aws_access_key_id': args.aws_access_key_id, 'aws_secret_access_key': args.aws_secret_access_key}
-
-def isSelected(region):
-    return True if region.name.find(args.region) != -1 else False
+# process common command line arguments
+log = logging.getLogger('botocross')
+bc.configure_logging(log, args.log_level)
+credentials = bc.parse_credentials(args)
+regions = bc.filter_regions(boto.sns.regions(), args.region)
 
 # execute business logic
-heading = "Creating SNS topics named '" + args.topic + "'"
-regions = boto.sns.regions()
-if args.region:
-    heading += " (filtered by region '" + args.region + "')"
-    regions = filter(isSelected, regions)
+log.info("Creating SNS topics named '" + args.topic + "':")
 
-print heading + ":"
 for region in regions:
     pprint(region.name, indent=2)
     try:
@@ -59,4 +55,4 @@ for region in regions:
         display_name += '-' + region.name
         sns.set_topic_attributes(arn, 'DisplayName', display_name)
     except boto.exception.BotoServerError, e:
-        print e.error_message
+        log.error(e.error_message )
