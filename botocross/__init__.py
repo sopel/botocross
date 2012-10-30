@@ -28,5 +28,20 @@ def configure_logging(logger, level):
     console_handler.setLevel(logger.getEffectiveLevel())
     logger.addHandler(console_handler)
 
+def build_filter_params(filter_args):
+    from collections import defaultdict
+
+    if not filter_args:
+        return None
+
+    params = defaultdict(list)
+    filters = [filter_arg.split('=') for filter_arg in filter_args]
+    for k, v in filters:
+        params[k].append(v)
+
+    botocross_log.info(filter_args)
+    botocross_log.debug(params)
+    return params
+
 class ExitCodes:
     (OK, FAIL) = range(0, 2)

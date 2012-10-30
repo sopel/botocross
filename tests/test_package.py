@@ -41,3 +41,30 @@ class TestPackage(unittest.TestCase):
 
         self.assertTrue(0 == ExitCodes.OK)
         self.assertTrue(1 == ExitCodes.FAIL)
+
+    def test_build_filter_params_with_no_keys(self):
+        from botocross import build_filter_params
+
+        args = None
+        params = build_filter_params(args)
+        self.assertEquals(None, params)
+
+    def test_build_filter_params_with_differing_keys(self):
+        from botocross import build_filter_params
+
+        args = ["tag:Name=boto", "tag:Extension=botocross"]
+        params = build_filter_params(args)
+        self.assertEquals(2, len(params))
+        for k, v in params.iteritems():
+            self.assertTrue(isinstance(v, list))
+            self.assertEquals(1, len(v))
+
+    def test_build_filter_params_with_identical_keys(self):
+        from botocross import build_filter_params
+
+        args = ["tag:Name=boto", "tag:Name=botocross"]
+        params = build_filter_params(args)
+        self.assertEquals(1, len(params))
+        for k, v in params.iteritems():
+            self.assertTrue(isinstance(v, list))
+            self.assertEquals(2, len(v))
