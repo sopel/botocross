@@ -20,33 +20,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-from botocross import ExitCodes, configure_logging
 from pprint import pprint
 import argparse
 import boto
 import boto.cloudformation
+import botocross as bc
 import logging
 import sys
-log = logging.getLogger('botocross')
 
 # configure command line argument parsing
-parser = argparse.ArgumentParser(description='Validates a CloudFormation stack template')
+parser = argparse.ArgumentParser(description='Validates a CloudFormation stack template',
+                                 parents=[bc.build_region_parser(), bc.build_common_parser()])
 parser.add_argument("template", help="A stack template local file or a S3 URL. Substitutions for {REGION} and {ACCOUNT} are available to support S3 URL construction.")
-parser.add_argument("-r", "--region", help="A region substring selector (e.g. 'us-west')")
-parser.add_argument("--access_key_id", dest='aws_access_key_id', help="Your AWS Access Key ID")
-parser.add_argument("--secret_access_key", dest='aws_secret_access_key', help="Your AWS Secret Access Key")
-parser.add_argument("-v", "--verbose", action='store_true')  # TODO: drop in favor of a log formatter?!
-parser.add_argument("-l", "--log", dest='log_level', default='WARNING',
-                    choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-                    help="The logging level to use. [default: WARNING]")
 args = parser.parse_args()
 
-credentials = {'aws_access_key_id': args.aws_access_key_id, 'aws_secret_access_key': args.aws_secret_access_key}
-
-def isSelected(region):
-    return True if region.name.find(args.region) != -1 else False
-
-configure_logging(log, args.log_level)
+# process common command line arguments
+log = logging.getLogger('botocross')
+bc.configure_logging(log, args.log_level)
+credentials = bc.parse_credentials(args)
+regions = bc.filter_regions(boto.cloudformation.regions(), args.region)
 
 def processArgument(argument, region_name):
     return argument.replace('{REGION}', region_name)
@@ -60,11 +52,7 @@ def printResult(name, template):
             pprint (vars(parameter), indent=2)
 
 # execute business logic
-heading = "Validating CloudFormation template '" + args.template + "':"
-regions = boto.cloudformation.regions()
-if args.region:
-    heading += " (filtered by region '" + args.region + "')"
-    regions = filter(isSelected, regions)
+log.info("Validating CloudFormation template '" + args.template + "':")
 
 try:
     # Is this a HTTP(S) template?
@@ -86,4 +74,4 @@ try:
         printResult(args.template, template)
 except boto.exception.BotoServerError, e:
     log.exception(e)
-    sys.exit(ExitCodes.FAIL)
+    sys.exit(bc.ExitCodes.FAIL)

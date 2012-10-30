@@ -20,29 +20,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-from botocross import ExitCodes, configure_logging
 from botocross.iam.accountinfo import AccountInfo
 from botocross.iam.userinfo import UserInfo
 import argparse
 import boto
+import botocross as bc
 import logging
 import sys
-log = logging.getLogger('botocross')
 
 # configure command line argument parsing
-parser = argparse.ArgumentParser(description='Validates AWS credentials and display account/user information')
-parser.add_argument("--access_key_id", dest='aws_access_key_id', help="Your AWS Access Key ID")
-parser.add_argument("--secret_access_key", dest='aws_secret_access_key', help="Your AWS Secret Access Key")
-parser.add_argument("-l", "--log", dest='log_level', default='WARNING',
-                    choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-                    help="The logging level to use. [default: WARNING]")
+parser = argparse.ArgumentParser(description='Validates AWS credentials and display account/user information',
+                                 parents=[bc.build_common_parser()])
 args = parser.parse_args()
 
-configure_logging(log, args.log_level)
+# process common command line arguments
+log = logging.getLogger('botocross')
+bc.configure_logging(log, args.log_level)
+credentials = bc.parse_credentials(args)
 
 # execute business logic
-credentials = {'aws_access_key_id': args.aws_access_key_id, 'aws_secret_access_key': args.aws_secret_access_key}
-heading = "Validating credentials:"
+log.info("Validating credentials:")
 
 try:
     iam = boto.connect_iam(**credentials)
@@ -54,4 +51,4 @@ try:
     print "Account alias is '" + account.alias + "' with id " + account.id
 except boto.exception.BotoServerError, e:
     log.exception(e)
-    sys.exit(ExitCodes.FAIL)
+    sys.exit(bc.ExitCodes.FAIL)

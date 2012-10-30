@@ -24,21 +24,22 @@ from pprint import pprint
 import argparse
 import boto
 import boto.sns
+import botocross as bc
+import logging
 
 # configure command line argument parsing
-parser = argparse.ArgumentParser(description='Subscribe to a SNS topic in all/some available SNS regions')
+parser = argparse.ArgumentParser(description='Subscribe to a SNS topic in all/some available SNS regions',
+                                 parents=[bc.build_region_parser(), bc.build_common_parser()])
 parser.add_argument("topic", help="A topic name")
 parser.add_argument("protocol", help="The protocol used to communicate with the subscriber. Current choices are: email|email-json|http|https|sqs")
 parser.add_argument("endpoint", help="The endpoint to receive notifications.")
-parser.add_argument("-r", "--region", help="A region substring selector (e.g. 'us-west')")
-parser.add_argument("--access_key_id", dest='aws_access_key_id', help="Your AWS Access Key ID")
-parser.add_argument("--secret_access_key", dest='aws_secret_access_key', help="Your AWS Secret Access Key")
 args = parser.parse_args()
 
-credentials = {'aws_access_key_id': args.aws_access_key_id, 'aws_secret_access_key': args.aws_secret_access_key}
-
-def isSelected(region):
-    return True if region.name.find(args.region) != -1 else False
+# process common command line arguments
+log = logging.getLogger('botocross')
+bc.configure_logging(log, args.log_level)
+credentials = bc.parse_credentials(args)
+regions = bc.filter_regions(boto.sns.regions(), args.region)
 
 def createTopicArn(region_name, topic_name):
     from botocross.iam.accountinfo import AccountInfo
@@ -48,13 +49,8 @@ def createTopicArn(region_name, topic_name):
     return 'arn:aws:sns:' + region_name + ':' + account.id + ':' + topic_name
 
 # execute business logic
-heading = "Subscribing to SNS topics named '" + args.topic + "'"
-regions = boto.sns.regions()
-if args.region:
-    heading += " (filtered by region '" + args.region + "')"
-    regions = filter(isSelected, regions)
+log.info("Subscribing to SNS topics named '" + args.topic + "':")
 
-print heading + ":"
 for region in regions:
     pprint(region.name, indent=2)
     try:
@@ -63,4 +59,4 @@ for region in regions:
         print 'Subscribing to topic ' + arn + ' with protocol ' + args.protocol + ' and endpoint ' + args.endpoint
         sns.subscribe(arn, args.protocol, args.endpoint)
     except boto.exception.BotoServerError, e:
-        print e.error_message
+        log.error(e.error_message)

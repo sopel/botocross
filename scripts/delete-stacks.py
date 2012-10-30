@@ -20,39 +20,28 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-from botocross import configure_logging
 from pprint import pprint
 import argparse
 import boto
 import boto.cloudformation
+import botocross as bc
 import logging
-log = logging.getLogger('botocross')
 
 # configure command line argument parsing
-parser = argparse.ArgumentParser(description='Delete a CloudFormation stack in all/some available CloudFormation regions')
+parser = argparse.ArgumentParser(description='Delete a CloudFormation stack in all/some available CloudFormation regions',
+                                 parents=[bc.build_region_parser(), bc.build_common_parser()])
 parser.add_argument("stack_name_or_id", metavar='stack_name', help="A stack name or id (ARN)")
-parser.add_argument("-r", "--region", help="A region substring selector (e.g. 'us-west')")
-parser.add_argument("--access_key_id", dest='aws_access_key_id', help="Your AWS Access Key ID")
-parser.add_argument("--secret_access_key", dest='aws_secret_access_key', help="Your AWS Secret Access Key")
-parser.add_argument("-l", "--log", dest='log_level', default='WARNING',
-                    choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-                    help="The logging level to use. [default: WARNING]")
 args = parser.parse_args()
 
-configure_logging(log, args.log_level)
-
-def isSelected(region):
-    return True if region.name.find(args.region) != -1 else False
+# process common command line arguments
+log = logging.getLogger('botocross')
+bc.configure_logging(log, args.log_level)
+credentials = bc.parse_credentials(args)
+regions = bc.filter_regions(boto.cloudformation.regions(), args.region)
 
 # execute business logic
-credentials = {'aws_access_key_id': args.aws_access_key_id, 'aws_secret_access_key': args.aws_secret_access_key}
-heading = "Deleting CloudFormation stacks named '" + args.stack_name_or_id + "'"
-regions = boto.cloudformation.regions()
-if args.region:
-    heading += " (filtered by region '" + args.region + "')"
-    regions = filter(isSelected, regions)
+log.info("Deleting CloudFormation stacks named '" + args.stack_name_or_id + "':")
 
-print heading + ":"
 for region in regions:
     pprint(region.name, indent=2)
     try:

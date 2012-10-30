@@ -68,3 +68,37 @@ class TestPackage(unittest.TestCase):
         for k, v in params.iteritems():
             self.assertTrue(isinstance(v, list))
             self.assertEquals(2, len(v))
+
+    def test_filter_regions(self):
+        from botocross import filter_regions
+        import boto.cloudformation
+
+        log.info("Testing region filter:")
+        all_regions = boto.cloudformation.regions()
+        filtered_regions = filter_regions(all_regions, "us-west-1")
+        self.assertEquals(1, len(filtered_regions))
+        filtered_regions = filter_regions(all_regions, "us-west")
+        self.assertEquals(2, len(filtered_regions))
+        filtered_regions = filter_regions(all_regions, "west-1")
+        self.assertEquals(2, len(filtered_regions))
+        filtered_regions = filter_regions(all_regions, "west")
+        self.assertEquals(3, len(filtered_regions))
+        filtered_regions = filter_regions(all_regions, None)
+        self.assertEquals(7, len(filtered_regions))
+
+    def test_filter_regions_s3(self):
+        from botocross import filter_regions_s3
+        from botocross.s3 import RegionMap
+
+        log.info("Testing region filter:")
+        all_regions = RegionMap
+        filtered_regions = filter_regions_s3(all_regions, "us-west-1")
+        self.assertEquals(1, len(filtered_regions))
+        filtered_regions = filter_regions_s3(all_regions, "us-west")
+        self.assertEquals(2, len(filtered_regions))
+        filtered_regions = filter_regions_s3(all_regions, "west-1")
+        self.assertEquals(2, len(filtered_regions))
+        filtered_regions = filter_regions_s3(all_regions, "west")
+        self.assertEquals(3, len(filtered_regions))
+        filtered_regions = filter_regions_s3(all_regions, None)
+        self.assertEquals(7, len(filtered_regions))

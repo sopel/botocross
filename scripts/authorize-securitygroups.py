@@ -24,6 +24,8 @@ from pprint import pprint
 import argparse
 import boto
 import boto.ec2
+import botocross as bc
+import logging
 
 # TODO: enable cross account usage via src_security_group_owner_id?
 def authorizeSource():
@@ -36,16 +38,14 @@ def authorizeIp():
                                  from_port=args.from_port, to_port=args.to_port, cidr_ip=args.cidr_ip)
 
 # configure command line argument parsing
-parser = argparse.ArgumentParser(description='Authorize a new rule in an existing security group in all/some available EC2 regions')
+parser = argparse.ArgumentParser(description='Authorize a new rule in an existing security group in all/some available EC2 regions',
+                                 parents=[bc.build_region_parser(), bc.build_common_parser()])
 target_group = parser.add_mutually_exclusive_group(required=True)
 target_group.add_argument("-n", "--name", help="The security group name")
 target_group.add_argument("-i", "--id", help="The security group id (required in VPC)")
 parser.add_argument("--ip_protocol", choices=['tcp', 'udp', 'icmp'], required=True, help="The IP protocol you are enabling")
 parser.add_argument("--from_port", type=int, required=True, help="The beginning port number you are enabling")
 parser.add_argument("--to_port", type=int, required=True, help="The ending port number you are enabling")
-parser.add_argument("-r", "--region", help="A region substring selector (e.g. 'us-west')")
-parser.add_argument("--access_key_id", dest='aws_access_key_id', help="Your AWS Access Key ID")
-parser.add_argument("--secret_access_key", dest='aws_secret_access_key', help="Your AWS Secret Access Key")
 # sub-commands
 subparsers = parser.add_subparsers(title='sub-commands', help='All available sub-commands')
 # sub-command 'source'
@@ -61,28 +61,24 @@ parser_ip.add_argument("--cidr_ip", required=True, help="The CIDR block you are 
 parser_ip.set_defaults(func=authorizeIp)
 args = parser.parse_args()
 
-credentials = {'aws_access_key_id': args.aws_access_key_id, 'aws_secret_access_key': args.aws_secret_access_key}
-
-def isSelected(region):
-    return True if region.name.find(args.region) != -1 else False
+# process common command line arguments
+log = logging.getLogger('botocross')
+bc.configure_logging(log, args.log_level)
+credentials = bc.parse_credentials(args)
+regions = bc.filter_regions(boto.ec2.regions(), args.region)
 
 # execute business logic
 group_name = args.name if args.name else ""
 group_id = args.id if args.id else ""
-heading = "Authorizing EC2 security groups '" + group_name + group_id + "'"
-regions = boto.ec2.regions()
-if args.region:
-    heading += " (filtered by region '" + args.region + "')"
-    regions = filter(isSelected, regions)
+log.info("Authorizing EC2 security groups '" + group_name + group_id + "':")
 
 groupnames = [args.name] if args.name else None
 group_ids = [args.id] if args.id else None
 
-print heading + ":"
 for region in regions:
     pprint(region.name, indent=2)
     try:
         ec2 = boto.connect_ec2(region=region, **credentials)
         args.func()
     except boto.exception.BotoServerError, e:
-        print e.error_message
+        log.error(e.error_message )
