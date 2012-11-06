@@ -45,8 +45,7 @@ class AccountInfo:
         except boto.exception.BotoServerError, e:
             # NOTE: given some information can be deduced from the exception still, the lack of permissions is
             # considered a normal condition still and the exception handled/logged accordingly.
-            # TODO: Identify proper exception code for this condition (rather than raising InvalidClientTokenId only).
-            if e.error_code == 'InvalidClientTokenId':
+            if e.error_code != 'AccessDenied':
                 raise
             self.log.debug(e.error_message)
         try:
@@ -60,8 +59,7 @@ class AccountInfo:
         except boto.exception.BotoServerError, e:
             # NOTE: given some information can be deduced from the exception still, the lack of permissions is
             # considered a normal condition still and the exception handled/logged accordingly.
-            # TODO: Identify proper exception code for this condition (rather than raising InvalidClientTokenId only).
-            if e.error_code == 'InvalidClientTokenId':
+            if e.error_code != 'AccessDenied':
                 raise
             self.id = e.error_message.replace('User: arn:aws:iam::', '').partition(':')[0]
             self.log.debug(e.error_message)
