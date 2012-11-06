@@ -21,3 +21,6 @@
 
 import logging
 iam_log = logging.getLogger('botocross.iam')
+
+RESOURCE_NONEXISTENT = '<nonexistent>'
+RESOURCE_UNAUTHORIZED = '<unauthorized>'

@@ -20,6 +20,7 @@
 # IN THE SOFTWARE.
 
 import boto
+import botocross.iam
 import logging
 
 class UserInfo:
@@ -31,9 +32,9 @@ class UserInfo:
         self.connection = iam_connection
         self.log = logging.getLogger('boto_cli.iam.UserInfo')
         # populate those attributes not leaked via the exception, if user has no permission for iam:GetUser
-        self.path = '<not authorized>'
-        self.create_date = '<not authorized>'
-        self.id = '<not authorized>'  # TODO: could be deduced from credentials in use instead.
+        self.path = botocross.iam.RESOURCE_UNAUTHORIZED
+        self.create_date = botocross.iam.RESOURCE_UNAUTHORIZED
+        self.id = botocross.iam.RESOURCE_UNAUTHORIZED  # TODO: could be deduced from credentials in use instead.
 
     def __repr__(self):
         return '<UserInfo - path:%s create_date:%s id:%s arn:%s name:%s>' % (self.path, self.create_date, self.id, self.arn, self.name)
