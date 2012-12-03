@@ -57,7 +57,7 @@ def create_snapshots(ec2, volumes, backup_set, description):
         tags = {TAG_NAME: name, TAG_BACKUP_POLICY: backup_set}
         ec2.create_tags([response.id], tags)
 
-def delete_snapshots(ec2, volumes, backup_set, backup_retention, no_origin_safeguard=False):
+def expire_snapshots(ec2, volumes, backup_set, backup_retention, no_origin_safeguard=False):
     log = ec2_log
     for volume in volumes:
         snapshot_filters = {"volume-id": volume.id, "tag:" + TAG_BACKUP_POLICY: backup_set}
@@ -76,7 +76,7 @@ def delete_snapshots(ec2, volumes, backup_set, backup_retention, no_origin_safeg
                 break
             num_snapshots -= 1
             log.info("... deleting snapshot '" + snapshot.id + "' ...")
-            response = ec2.delete_snapshot(snapshot.id)
+            ec2.delete_snapshot(snapshot.id)
 
 def create_images(ec2, reservations, backup_set, description, no_reboot=False):
     log = ec2_log
@@ -92,9 +92,9 @@ def create_images(ec2, reservations, backup_set, description, no_reboot=False):
             name = derive_name(ec2, instance.id, iso_datetime)
             log.debug(TAG_NAME + ": " + name)
             tags = {TAG_NAME: name, TAG_BACKUP_POLICY: backup_set}
-            ec2.create_tags([image_id], tags)
+            ec2.create_tags([image], tags)
 
-def delete_images(ec2, reservations, backup_set, backup_retention, no_origin_safeguard=False):
+def expire_images(ec2, reservations, backup_set, backup_retention, no_origin_safeguard=False):
     log = ec2_log
     for reservation in reservations:
         for instance in reservation.instances:
@@ -114,4 +114,4 @@ def delete_images(ec2, reservations, backup_set, backup_retention, no_origin_saf
                     break
                 num_images -= 1
                 log.info("... deregistering image '" + image.id + "' ...")
-                response = ec2.deregister_image(image.id, delete_snapshot=True)
+                ec2.deregister_image(image.id, delete_snapshot=True)
