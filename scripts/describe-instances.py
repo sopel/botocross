@@ -50,11 +50,11 @@ for region in regions:
         ec2 = boto.connect_ec2(region=region, **credentials)
         reservations = ec2.get_all_instances(instance_ids=args.resource_ids, filters=filters)
         print region.name + ": " + str(len(reservations)) + " instances"
-        for reservation in reservations:
-            for instance in reservation.instances:
-                if args.verbose:
-                    pprint(vars(instance))
-                else:
-                    print instance.id
+        instances = [instance for reservation in reservations for instance in reservation.instances]
+        for instance in instances:
+            if args.verbose:
+                pprint(vars(instance))
+            else:
+                print instance.id
     except boto.exception.BotoServerError, e:
         log.error(e.error_message)

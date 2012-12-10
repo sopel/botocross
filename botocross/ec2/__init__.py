@@ -57,15 +57,15 @@ def create_snapshots(ec2, volumes, backup_set, description):
         tags = {TAG_NAME: name, TAG_BACKUP_POLICY: backup_set}
         ec2.create_tags([response.id], tags)
 
-def expire_snapshots(ec2, volumes, backup_set, backup_retention, no_origin_safeguard=False):
+def expire_snapshots(ec2, volume_ids, backup_set, backup_retention, no_origin_safeguard=False):
     log = ec2_log
-    for volume in volumes:
-        snapshot_filters = {"volume-id": volume.id, "tag:" + TAG_BACKUP_POLICY: backup_set}
+    for volume_id in volume_ids:
+        snapshot_filters = {"volume-id": volume_id, "tag:" + TAG_BACKUP_POLICY: backup_set}
         if not no_origin_safeguard:
-            snapshot_filters['description'] = CREATED_BY_BOTO_EBS_SNAPSHOT_SCRIPT_SIGNATURE + volume.id
+            snapshot_filters['description'] = CREATED_BY_BOTO_EBS_SNAPSHOT_SCRIPT_SIGNATURE + volume_id
         log.debug(snapshot_filters)
         snapshots = ec2.get_all_snapshots(owner='self', filters=snapshot_filters)
-        log.info("Deleting snapshots of " + volume.id + " (set '" + backup_set + "', " + str(len(snapshots)) + " available, retaining " + str(backup_retention) + "):")
+        log.info("Deleting snapshots of " + volume_id + " (set '" + backup_set + "', " + str(len(snapshots)) + " available, retaining " + str(backup_retention) + "):")
         # While snapshots are apparently returned in oldest to youngest order, this isn't documented;
         # therefore an explicit sort is performed to ensure this regardless.
         num_snapshots = len(snapshots);
@@ -94,24 +94,23 @@ def create_images(ec2, reservations, backup_set, description, no_reboot=False):
             tags = {TAG_NAME: name, TAG_BACKUP_POLICY: backup_set}
             ec2.create_tags([image], tags)
 
-def expire_images(ec2, reservations, backup_set, backup_retention, no_origin_safeguard=False):
+def expire_images(ec2, instance_ids, backup_set, backup_retention, no_origin_safeguard=False):
     log = ec2_log
-    for reservation in reservations:
-        for instance in reservation.instances:
-            image_filters = {"name": instance.id + "*", "tag:" + TAG_BACKUP_POLICY: backup_set}
-            if not no_origin_safeguard:
-                image_filters['description'] = CREATED_BY_BOTO_EC2_IMAGE_SCRIPT_SIGNATURE + instance.id
-            log.debug(image_filters)
-            images = ec2.get_all_images(owners=['self'], filters=image_filters)
-            log.info("Deregistering images of " + instance.id + " (set '" + backup_set + "', " + str(len(images)) + " available, retaining " + str(backup_retention) + "):")
-            # While images are apparently returned in oldest to youngest order, this isn't documented;
-            # therefore an explicit sort is performed to ensure this regardless.
-            num_images = len(images)
-            for image in sorted(images, key=attrgetter('name')):
-                log.debug(image.name)
-                if num_images <= backup_retention:
-                    log.info("... retaining last " + str(backup_retention) + " images.")
-                    break
-                num_images -= 1
-                log.info("... deregistering image '" + image.id + "' ...")
-                ec2.deregister_image(image.id, delete_snapshot=True)
+    for instance_id in instance_ids:
+        image_filters = {"name": instance_id + "*", "tag:" + TAG_BACKUP_POLICY: backup_set}
+        if not no_origin_safeguard:
+            image_filters['description'] = CREATED_BY_BOTO_EC2_IMAGE_SCRIPT_SIGNATURE + instance_id
+        log.debug(image_filters)
+        images = ec2.get_all_images(owners=['self'], filters=image_filters)
+        log.info("Deregistering images of " + instance_id + " (set '" + backup_set + "', " + str(len(images)) + " available, retaining " + str(backup_retention) + "):")
+        # While images are apparently returned in oldest to youngest order, this isn't documented;
+        # therefore an explicit sort is performed to ensure this regardless.
+        num_images = len(images)
+        for image in sorted(images, key=attrgetter('name')):
+            log.debug(image.name)
+            if num_images <= backup_retention:
+                log.info("... retaining last " + str(backup_retention) + " images.")
+                break
+            num_images -= 1
+            log.info("... deregistering image '" + image.id + "' ...")
+            ec2.deregister_image(image.id, delete_snapshot=True)

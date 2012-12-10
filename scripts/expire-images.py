@@ -32,7 +32,7 @@ import logging
 parser = argparse.ArgumentParser(description='Expire images of EC2 instances in all/some available EC2 regions',
                                  parents=[bc.build_region_parser(), bc.build_common_parser()])
 parser.add_argument("-f", "--filter", action="append", help="An EC2 instance filter. [can be used multiple times]")
-parser.add_argument("-i", "--id", dest="resource_ids", action="append", help="An EC2 instance id. [can be used multiple times]")
+parser.add_argument("-i", "--id", dest="resource_ids", action="append", help="An EC2 instance id (existing or terminated). [can be used multiple times]")
 parser.add_argument("-br", "--backup_retention", type=int, default=1, help="The number of backups to retain (correlated via backup_set). [default: 1]")
 parser.add_argument("-bs", "--backup_set", default=DEFAULT_BACKUP_SET, help="A backup set name (determines retention correlation). [default: 'default]'")
 parser.add_argument("-ns", "--no_origin_safeguard", action="store_true", help="Allow deletion of images originating from other tools. [default: False]")
@@ -55,8 +55,13 @@ log.debug(backup_set)
 for region in regions:
     try:
         ec2 = boto.connect_ec2(region=region, **credentials)
-        reservations = ec2.get_all_instances(instance_ids=args.resource_ids, filters=filters)
-        print region.name + ": " + str(len(reservations)) + " instances"
-        expire_images(ec2, reservations, backup_set, args.backup_retention, args.no_origin_safeguard)
+        # NOTE: Not filtering by id allows expiring images of terminated instances as well.
+        reservations = ec2.get_all_instances(filters=filters)
+        instance_ids = [instance.id for reservation in reservations for instance in reservation.instances]
+        num_instances = len(instance_ids)
+        if args.resource_ids:
+            instance_ids.extend(args.resource_ids)
+        print region.name + ": " + str(num_instances) + " instances / " + str(len(instance_ids)) + " instance IDs"
+        expire_images(ec2, instance_ids, backup_set, args.backup_retention, args.no_origin_safeguard)
     except boto.exception.BotoServerError, e:
         log.error(e.error_message)
