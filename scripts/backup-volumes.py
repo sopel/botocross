@@ -29,13 +29,14 @@ import botocross as bc
 import logging
 
 # configure command line argument parsing
-parser = argparse.ArgumentParser(description='Create images of EC2 instances in all/some available EC2 regions',
-                                 parents=[bc.build_region_parser(), bc.build_common_parser()])
-parser.add_argument("-f", "--filter", action="append", help="An EC2 instance filter. [can be used multiple times]")
-parser.add_argument("-i", "--id", dest="resource_ids", action="append", help="An EC2 instance id. [can be used multiple times]")
-parser.add_argument("-d", "--description", help="A description for the EC2 image [default: <provided>]")
-parser.add_argument("-nr", "--no_reboot", action="store_true", help="Prevent shut down of instance before creating the image. [default: False]")
-parser.add_argument("-bs", "--backup_set", default=DEFAULT_BACKUP_SET, help="A backup set name (determines retention correlation). [default: 'default'")
+parser = argparse.ArgumentParser(description='Backup EBS volumes in all/some available EC2 regions',
+                                 parents=[bc.build_region_parser(), bc.build_common_parser(), bc.build_timeout_parser()])
+parser.add_argument("-f", "--filter", action="append", help="An EBS volume filter. [can be used multiple times]")
+parser.add_argument("-i", "--id", dest="resource_ids", action="append", help="An EBS volume id. [can be used multiple times]")
+parser.add_argument("-d", "--description", help="A description for the EBS snapshot [default: <provided>]")
+parser.add_argument("-br", "--backup_retention", type=int, default=1, help="The number of backups to retain (correlated via backup_set). [default: 1]")
+parser.add_argument("-bs", "--backup_set", default=DEFAULT_BACKUP_SET, help="A backup set name (determines retention correlation). [default: 'default']")
+parser.add_argument("-ns", "--no_origin_safeguard", action="store_true", help="Allow deletion of snapshots originating from other tools. [default: False]")
 args = parser.parse_args()
 
 # process common command line arguments
@@ -47,7 +48,7 @@ filters = bc.build_filter_params(args.filter)
 log.info(args.resource_ids)
 
 # execute business logic
-log.info("Imaging EC2 instances:")
+log.info("Backing up EBS volumes:")
 
 backup_set = args.backup_set if args.backup_set else DEFAULT_BACKUP_SET
 log.debug(backup_set)
@@ -55,9 +56,11 @@ log.debug(backup_set)
 for region in regions:
     try:
         ec2 = boto.connect_ec2(region=region, **credentials)
-        reservations = ec2.get_all_instances(instance_ids=args.resource_ids, filters=filters)
-        instances = [instance for reservation in reservations for instance in reservation.instances]
-        print region.name + ": " + str(len(instances)) + " instances"
-        create_images(ec2, instances, backup_set, args.description, no_reboot=args.no_reboot)
+        volumes = ec2.get_all_volumes(volume_ids=args.resource_ids, filters=filters)
+        print region.name + ": " + str(len(volumes)) + " volumes"
+        snapshots = create_snapshots(ec2, volumes, backup_set, args.description)
+        # TODO: add support for 'awaiting' the smapshot creation result, once available.
+        volume_ids = [volume.id for volume in volumes]
+        expire_snapshots(ec2, volume_ids, backup_set, args.backup_retention, args.no_origin_safeguard)
     except boto.exception.BotoServerError, e:
         log.error(e.error_message)

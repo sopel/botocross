@@ -60,7 +60,7 @@ def create_snapshots(ec2, volumes, backup_set, description):
 def expire_snapshots(ec2, volume_ids, backup_set, backup_retention, no_origin_safeguard=False):
     log = ec2_log
     for volume_id in volume_ids:
-        snapshot_filters = {"volume-id": volume_id, "tag:" + TAG_BACKUP_POLICY: backup_set}
+        snapshot_filters = {"volume-id": volume_id, "tag:" + TAG_BACKUP_POLICY: backup_set, "status": "completed"}
         if not no_origin_safeguard:
             snapshot_filters['description'] = CREATED_BY_BOTO_EBS_SNAPSHOT_SCRIPT_SIGNATURE + volume_id
         log.debug(snapshot_filters)
@@ -78,26 +78,25 @@ def expire_snapshots(ec2, volume_ids, backup_set, backup_retention, no_origin_sa
             log.info("... deleting snapshot '" + snapshot.id + "' ...")
             ec2.delete_snapshot(snapshot.id)
 
-def create_images(ec2, reservations, backup_set, description, no_reboot=False):
+def create_images(ec2, instances, backup_set, description, no_reboot=False):
     log = ec2_log
-    for reservation in reservations:
-        for instance in reservation.instances:
-            signature = description if description else CREATED_BY_BOTO_EC2_IMAGE_SCRIPT_SIGNATURE + instance.id
-            log.debug("Description: " + signature)
-            iso_datetime = datetime.utcnow()
-            ami_name = derive_name(ec2, instance.id, iso_datetime, True)
-            log.debug("AMI name: " + ami_name)
-            image_id = ec2.create_image(instance.id, name=ami_name, description=signature, no_reboot=no_reboot)
+    for instance in instances:
+        signature = description if description else CREATED_BY_BOTO_EC2_IMAGE_SCRIPT_SIGNATURE + instance.id
+        log.debug("Description: " + signature)
+        iso_datetime = datetime.utcnow()
+        ami_name = derive_name(ec2, instance.id, iso_datetime, True)
+        log.debug("AMI name: " + ami_name)
+        image = ec2.create_image(instance.id, name=ami_name, description=signature, no_reboot=no_reboot)
 
-            name = derive_name(ec2, instance.id, iso_datetime)
-            log.debug(TAG_NAME + ": " + name)
-            tags = {TAG_NAME: name, TAG_BACKUP_POLICY: backup_set}
-            ec2.create_tags([image], tags)
+        name = derive_name(ec2, instance.id, iso_datetime)
+        log.debug(TAG_NAME + ": " + name)
+        tags = {TAG_NAME: name, TAG_BACKUP_POLICY: backup_set}
+        ec2.create_tags([image], tags)
 
 def expire_images(ec2, instance_ids, backup_set, backup_retention, no_origin_safeguard=False):
     log = ec2_log
     for instance_id in instance_ids:
-        image_filters = {"name": instance_id + "*", "tag:" + TAG_BACKUP_POLICY: backup_set}
+        image_filters = {"name": instance_id + "*", "tag:" + TAG_BACKUP_POLICY: backup_set, "state": "available"}
         if not no_origin_safeguard:
             image_filters['description'] = CREATED_BY_BOTO_EC2_IMAGE_SCRIPT_SIGNATURE + instance_id
         log.debug(image_filters)

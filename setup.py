@@ -14,6 +14,8 @@ setup(name="botocross",
       packages=find_packages(),
       scripts=[
         'scripts/authorize-securitygroups.py',
+        'scripts/backup-instances.py',
+        'scripts/backup-volumes.py',
         'scripts/create-buckets.py',
         'scripts/create-images.py',
         'scripts/create-securitygroups.py',
