@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
+from pprint import pprint
 import argparse
 import boto
 import boto.ec2
@@ -49,6 +50,9 @@ for region in regions:
         resources = ec2.get_all_tags(filters=filters)
         print region.name + ": " + str(len(resources)) + " resources with tags"
         for resource in resources:
-           print "type: " + resource.res_type + ", id: " + resource.res_id + ", key: " + resource.name + ", value: " + resource.value
+            if args.verbose:
+                pprint(vars(resource))
+            else:
+                print "type: " + resource.res_type + ", id: " + resource.res_id + ", key: " + resource.name + ", value: " + resource.value
     except boto.exception.BotoServerError, e:
         log.error(e.error_message)

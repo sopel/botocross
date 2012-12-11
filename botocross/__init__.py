@@ -47,6 +47,9 @@ def create_arn(iam, service, region, resource):
     return 'arn:aws:' + service + ':' + region + ':' + account.id + ':' + resource
 
 # TODO: refactor to argparse custom action for inline usage!
+def build_filter(filter_args, exclude_args):
+    return {'filters': build_filter_params(filter_args), 'excludes': build_filter_params(exclude_args)}
+
 def build_filter_params(filter_args):
     from collections import defaultdict
 
@@ -76,10 +79,12 @@ def build_region_parser():
     parser.add_argument("-r", "--region", help="A region substring selector (e.g. 'us-west')")
     return parser
 
-def build_filter_parser(resource_name):
+def build_filter_parser(resource_name, add_ids=True):
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("-f", "--filter", action="append", help="An EC2 instance filter. [can be used multiple times]")
-    parser.add_argument("-i", "--id", dest="resource_ids", action="append", help="An EC2 instance id. [can be used multiple times]")
+    parser.add_argument("-f", "--filter", action="append", help="A {0} filter. [can be used multiple times]".format(resource_name))
+    parser.add_argument("-x", "--exclude", action="append", help="A {0} filter (matching ones are excluded). [can be used multiple times]".format(resource_name))
+    if add_ids:
+        parser.add_argument("-i", "--id", dest="resource_ids", action="append", help="A {0} id. [can be used multiple times]".format(resource_name))
     return parser
 
 def parse_credentials(args):
@@ -87,6 +92,10 @@ def parse_credentials(args):
 
 def is_region_selected(region, name):
     return True if region.name.find(name) != -1 else False
+
+def filter_list_by_attribute(includes, excludes, attribute):
+    excluded_ids = set([getattr(exclude, attribute) for exclude in excludes])
+    return [include for include in includes if getattr(include, attribute) not in excluded_ids]
 
 def filter_regions(regions, region):
     if region:

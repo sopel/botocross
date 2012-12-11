@@ -30,9 +30,7 @@ import logging
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Create snapshots of EBS volumes in all/some available EC2 regions',
-                                 parents=[bc.build_region_parser(), bc.build_common_parser()])
-parser.add_argument("-f", "--filter", action="append", help="An EBS volume filter. [can be used multiple times]")
-parser.add_argument("-i", "--id", dest="resource_ids", action="append", help="An EBS volume id. [can be used multiple times]")
+                                 parents=[bc.build_region_parser(), bc.build_filter_parser('EBS volume'), bc.build_common_parser()])
 parser.add_argument("-d", "--description", help="A description for the EBS snapshot [default: <provided>]")
 parser.add_argument("-bs", "--backup_set", default=DEFAULT_BACKUP_SET, help="A backup set name (determines retention correlation). [default: 'default'")
 args = parser.parse_args()
@@ -42,7 +40,7 @@ log = logging.getLogger('botocross')
 bc.configure_logging(log, args.log_level)
 credentials = bc.parse_credentials(args)
 regions = bc.filter_regions(boto.ec2.regions(), args.region)
-filters = bc.build_filter_params(args.filter)
+filter = bc.build_filter(args.filter, args.exclude)
 log.info(args.resource_ids)
 
 # execute business logic
@@ -54,7 +52,10 @@ log.debug(backup_set)
 for region in regions:
     try:
         ec2 = boto.connect_ec2(region=region, **credentials)
-        volumes = ec2.get_all_volumes(volume_ids=args.resource_ids, filters=filters)
+        volumes = ec2.get_all_volumes(volume_ids=args.resource_ids, filters=filter['filters'])
+        if filter['excludes']:
+            exclusions = ec2.get_all_volumes(filters=filter['excludes'])
+            volumes = bc.filter_list_by_attribute(volumes, exclusions, 'id')
         print region.name + ": " + str(len(volumes)) + " volumes"
         create_snapshots(ec2, volumes, backup_set, args.description)
     except boto.exception.BotoServerError, e:
