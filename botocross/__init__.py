@@ -23,11 +23,22 @@ import argparse
 import logging
 botocross_log = logging.getLogger('botocross')
 
-def configure_logging(logger, level):
-    logger.setLevel(getattr(logging, level.upper()))
+def configure_logger(logger, level):
+    logger.setLevel(level)
+
+    # configure default stdout handler
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logger.getEffectiveLevel())
     logger.addHandler(console_handler)
+
+def configure_logging(logger, level):
+    # convert level string to format suitable for logging package
+    level = getattr(logging, level.upper())
+
+    # configure default stdout handlers for botocross and upstream boto
+    configure_logger(logger, level)
+    boto_logger = logging.getLogger('boto')
+    configure_logger(boto_logger, level)
 
 def create_arn(iam, service, region, resource):
     from botocross.iam.accountinfo import AccountInfo
