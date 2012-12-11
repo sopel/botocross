@@ -41,22 +41,18 @@ bc.configure_logging(log, args.log_level)
 credentials = bc.parse_credentials(args)
 regions = bc.filter_regions(boto.sns.regions(), args.region)
 
-def createTopicArn(region_name, topic_name):
-    from botocross.iam.accountinfo import AccountInfo
-    iam = boto.connect_iam(**credentials)
-    accountInfo = AccountInfo(iam)
-    account = accountInfo.describe()
-    return 'arn:aws:sns:' + region_name + ':' + account.id + ':' + topic_name
-
 # execute business logic
-log.info("Subscribing to SNS topics named '" + args.topic + "':")
+log.info("Subscribing to SNS topics named '" + args.topic + ' with protocol ' + args.protocol + ' and endpoint ' + args.endpoint + "':")
 
+iam = boto.connect_iam(**credentials)
 for region in regions:
     pprint(region.name, indent=2)
     try:
         sns = boto.connect_sns(region=region, **credentials)
-        arn = createTopicArn(region.name, args.topic)
-        print 'Subscribing to topic ' + arn + ' with protocol ' + args.protocol + ' and endpoint ' + args.endpoint
-        sns.subscribe(arn, args.protocol, args.endpoint)
+        arn = bc.create_arn(iam, 'sns', region.name, args.topic)
+        log.debug('Subscribing to topic ' + arn + ' with protocol ' + args.protocol + ' and endpoint ' + args.endpoint)
+        result = sns.subscribe(arn, args.protocol, args.endpoint)
+        print result['SubscribeResponse']['SubscribeResult']['SubscriptionArn']
+
     except boto.exception.BotoServerError, e:
         log.error(e.error_message)

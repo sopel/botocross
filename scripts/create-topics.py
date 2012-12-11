@@ -47,12 +47,11 @@ for region in regions:
     pprint(region.name, indent=2)
     try:
         sns = boto.connect_sns(region=region, **credentials)
-        print 'Creating topic ' + args.topic
         topic = sns.create_topic(args.topic)
         arn = topic['CreateTopicResponse']['CreateTopicResult']['TopicArn']
-        print('... topic ARN is ' + arn)
+        print arn
         display_name = args.display_name if args.display_name else args.topic
         display_name += '-' + region.name
         sns.set_topic_attributes(arn, 'DisplayName', display_name)
     except boto.exception.BotoServerError, e:
-        log.error(e.error_message )
+        log.error(e.error_message)
