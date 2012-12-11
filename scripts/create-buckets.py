@@ -51,7 +51,7 @@ for location in locations:
     pprint(region, indent=2)
     try:
         bucket_name = args.bucket + '-' + region
-        print 'Creating bucket ' + bucket_name
         s3.create_bucket(bucket_name, location=getattr(Location, location))
+        print bucket_name
     except boto.exception.BotoServerError, e:
         log.error(e.error_message)

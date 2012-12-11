@@ -20,37 +20,41 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-from pprint import pprint
 import argparse
 import boto
-import boto.ec2
+import boto.sns
 import botocross as bc
 import logging
 
 # configure command line argument parsing
-parser = argparse.ArgumentParser(description='Create a EC2 security group in all/some available EC2 regions',
+parser = argparse.ArgumentParser(description='Describe SNS topics in all/some available EC2 regions',
                                  parents=[bc.build_region_parser(), bc.build_common_parser()])
-parser.add_argument("group", help="A group name")
-parser.add_argument("-d", "--description", help="Override the groups description [default: group name + 'security group']")
-parser.add_argument("--vpc_id", help="The ID of the VPC to create the security group in, if any.")
 args = parser.parse_args()
 
 # process common command line arguments
 log = logging.getLogger('botocross')
 bc.configure_logging(log, args.log_level)
 credentials = bc.parse_credentials(args)
-regions = bc.filter_regions(boto.ec2.regions(), args.region)
+regions = bc.filter_regions(boto.sns.regions(), args.region)
 
 # execute business logic
-log.info("Creating EC2 security groups named '" + args.group + "':")
+log.info("Describing SNS topics:")
 
-description = args.description if args.description else args.group + " security group"
 
 for region in regions:
-    pprint(region.name, indent=2)
     try:
-        ec2 = boto.connect_ec2(region=region, **credentials)
-        group = ec2.create_security_group(args.group, description=description, vpc_id=args.vpc_id)
-        print group.id
+        sns = boto.connect_sns(region=region, **credentials)
+
+        topics = []
+        next_token = None
+        while True:
+            result = sns.get_all_topics(next_token)
+            topics.extend(result['ListTopicsResponse']['ListTopicsResult']['Topics'])
+            next_token = result['ListTopicsResponse']['ListTopicsResult']['NextToken']
+            if not next_token:
+                break
+        print region.name + ": " + str(len(topics)) + " topics:"
+        for topic in topics:
+           print topic['TopicArn']
     except boto.exception.BotoServerError, e:
         log.error(e.error_message)

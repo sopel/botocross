@@ -29,6 +29,12 @@ def configure_logging(logger, level):
     console_handler.setLevel(logger.getEffectiveLevel())
     logger.addHandler(console_handler)
 
+def create_arn(iam, service, region, resource):
+    from botocross.iam.accountinfo import AccountInfo
+    accountInfo = AccountInfo(iam)
+    account = accountInfo.describe()
+    return 'arn:aws:' + service + ':' + region + ':' + account.id + ':' + resource
+
 # TODO: refactor to argparse custom action for inline usage!
 def build_filter_params(filter_args):
     from collections import defaultdict
