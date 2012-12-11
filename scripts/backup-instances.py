@@ -30,7 +30,7 @@ import logging
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Backup EC2 instances in all/some available EC2 regions',
-                                 parents=[bc.build_region_parser(), bc.build_common_parser(), bc.build_timeout_parser()])
+                                 parents=[bc.build_region_parser(), bc.build_common_parser()])
 parser.add_argument("-f", "--filter", action="append", help="An EC2 instance filter. [can be used multiple times]")
 parser.add_argument("-i", "--id", dest="resource_ids", action="append", help="An EC2 instance id. [can be used multiple times]")
 parser.add_argument("-d", "--description", help="A description for the EC2 image [default: <provided>]")
