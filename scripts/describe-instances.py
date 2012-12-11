@@ -29,9 +29,7 @@ import logging
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Describe EC2 instances in all/some available EC2 regions',
-                                 parents=[bc.build_region_parser(), bc.build_common_parser()])
-parser.add_argument("-f", "--filter", action="append", help="An EC2 instance filter. [can be used multiple times]")
-parser.add_argument("-i", "--id", dest="resource_ids", action="append", help="An EBS instance id. [can be used multiple times]")
+                                 parents=[bc.build_region_parser(), bc.build_filter_parser('EC2 instance'), bc.build_common_parser()])
 args = parser.parse_args()
 
 # process common command line arguments
@@ -39,7 +37,7 @@ log = logging.getLogger('botocross')
 bc.configure_logging(log, args.log_level)
 credentials = bc.parse_credentials(args)
 regions = bc.filter_regions(boto.ec2.regions(), args.region)
-filters = bc.build_filter_params(args.filter)
+filter = bc.build_filter(args.filter, args.exclude)
 log.info(args.resource_ids)
 
 # execute business logic
@@ -48,7 +46,10 @@ log.info("Describing EC2 instances")
 for region in regions:
     try:
         ec2 = boto.connect_ec2(region=region, **credentials)
-        reservations = ec2.get_all_instances(instance_ids=args.resource_ids, filters=filters)
+        reservations = ec2.get_all_instances(instance_ids=args.resource_ids, filters=filter['filters'])
+        if filter['excludes']:
+            exclusions = ec2.get_all_instances(filters=filter['excludes'])
+            reservations = bc.filter_list_by_attribute(reservations, exclusions, 'id')
         print region.name + ": " + str(len(reservations)) + " instances"
         instances = [instance for reservation in reservations for instance in reservation.instances]
         for instance in instances:

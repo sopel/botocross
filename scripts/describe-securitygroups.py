@@ -29,8 +29,7 @@ import logging
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Describe EC2 security groups in all/some available EC2 regions',
-                                 parents=[bc.build_region_parser(), bc.build_common_parser()])
-parser.add_argument("-f", "--filter", action="append", help="A (key,value) pair for a filter to limit the results returned. [can be used multiple times]")
+                                 parents=[bc.build_region_parser(), bc.build_filter_parser('EC2 security group', False), bc.build_common_parser()])
 parser.add_argument("-li", "--instances", action="store_true", help="List all instances currently running within this security group")
 parser.add_argument("-lr", "--rules", action="store_true", help="List all rules currently active in this security group")
 args = parser.parse_args()
@@ -40,7 +39,7 @@ log = logging.getLogger('botocross')
 bc.configure_logging(log, args.log_level)
 credentials = bc.parse_credentials(args)
 regions = bc.filter_regions(boto.ec2.regions(), args.region)
-filters = bc.build_filter_params(args.filter)
+filter = bc.build_filter(args.filter, args.exclude)
 
 # execute business logic
 log.info("Describing EC2 security groups:")
@@ -52,10 +51,16 @@ for region in regions:
     pprint(region.name, indent=2)
     try:
         ec2 = boto.connect_ec2(region=region, **credentials)
-        groups = ec2.get_all_security_groups(filters=filters)
+        groups = ec2.get_all_security_groups(filters=filter['filters'])
+        if filter['excludes']:
+            exclusions = ec2.get_all_security_groups(filters=filter['excludes'])
+            groups = bc.filter_list_by_attribute(groups, exclusions, 'id')
         for group in groups:
-            vpc_id = "|" + group.vpc_id if group.vpc_id else ""
-            print("\n" + group.name + " (" + group.id + vpc_id + " - " + group.description + "):")
+            if args.verbose:
+                pprint(vars(group))
+            else:
+                vpc_id = "|" + group.vpc_id if group.vpc_id else ""
+                print("\n" + group.name + " (" + group.id + vpc_id + " - " + group.description + "):")
             if args.rules:
                 print("... rules ...")
                 for rule in group.rules:

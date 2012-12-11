@@ -29,9 +29,7 @@ import logging
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Describe EBS snapshots in all/some available EC2 regions',
-                                 parents=[bc.build_region_parser(), bc.build_common_parser()])
-parser.add_argument("-f", "--filter", action="append", help="An EBS snapshot filter. [can be used multiple times]")
-parser.add_argument("-i", "--id", dest="resource_ids", action="append", help="An EBS snapshot id. [can be used multiple times]")
+                                 parents=[bc.build_region_parser(), bc.build_filter_parser('EBS snapshots'), bc.build_common_parser()])
 args = parser.parse_args()
 
 # process common command line arguments
@@ -39,7 +37,7 @@ log = logging.getLogger('botocross')
 bc.configure_logging(log, args.log_level)
 credentials = bc.parse_credentials(args)
 regions = bc.filter_regions(boto.ec2.regions(), args.region)
-filters = bc.build_filter_params(args.filter)
+filter = bc.build_filter(args.filter, args.exclude)
 log.info(args.resource_ids)
 
 # execute business logic
@@ -48,12 +46,15 @@ log.info("Describing EBS snapshots:")
 for region in regions:
     try:
         ec2 = boto.connect_ec2(region=region, **credentials)
-        resources = ec2.get_all_snapshots(snapshot_ids=args.resource_ids, owner='self', filters=filters)
-        print region.name + ": " + str(len(resources)) + " snapshots"
-        for resource in resources:
+        snapshots = ec2.get_all_snapshots(snapshot_ids=args.resource_ids, owner='self', filters=filter['filters'])
+        if filter['excludes']:
+            exclusions = ec2.get_all_snapshots(owner='self', filters=filter['excludes'])
+            snapshots = bc.filter_list_by_attribute(snapshots, exclusions, 'id')
+        print region.name + ": " + str(len(snapshots)) + " snapshots"
+        for snapshot in snapshots:
             if args.verbose:
-                pprint(vars(resource))
+                pprint(vars(snapshot))
             else:
-                print resource.id
+                print snapshot.id
     except boto.exception.BotoServerError, e:
         log.error(e.error_message)
