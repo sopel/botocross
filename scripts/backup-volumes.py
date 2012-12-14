@@ -27,10 +27,12 @@ import boto
 import boto.ec2
 import botocross as bc
 import logging
+import sys
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Backup EBS volumes in all/some available EC2 regions',
-                                 parents=[bc.build_region_parser(), bc.build_filter_parser('EBS volume'), bc.build_common_parser()])
+                                 parents=[bc.build_region_parser(), bc.build_filter_parser('EBS volume'),
+                                          bc.build_common_parser(), bc.build_timeout_parser()])
 parser.add_argument("-d", "--description", help="A description for the EBS snapshot [default: <provided>]")
 parser.add_argument("-br", "--backup_retention", type=int, default=1, help="The number of backups to retain (correlated via backup_set). [default: 1]")
 parser.add_argument("-bs", "--backup_set", default=DEFAULT_BACKUP_SET, help="A backup set name (determines retention correlation). [default: 'default']")
@@ -51,6 +53,8 @@ log.info("Backing up EBS volumes:")
 backup_set = args.backup_set if args.backup_set else DEFAULT_BACKUP_SET
 log.debug(backup_set)
 
+# REVIEW: For backup purposes it seems reasonable to only consider all OK vs. FAIL?!
+exit_code = bc.ExitCodes.OK
 for region in regions:
     try:
         ec2 = boto.connect_ec2(region=region, **credentials)
@@ -60,8 +64,18 @@ for region in regions:
             volumes = bc.filter_list_by_attribute(volumes, exclusions, 'id')
         print region.name + ": " + str(len(volumes)) + " volumes"
         snapshots = create_snapshots(ec2, volumes, backup_set, args.description)
-        # TODO: add support for 'awaiting' the smapshot creation result, once available.
+        states = await_snapshots(ec2, snapshots, timeout=args.timeout)
+        if not bc.ec2.SNAPSHOT_STATES_SUCCEEDED.issuperset(states):
+            message = "FAILED to create some snapshots: {0}!".format(format_states(states))
+            log.error(message)
+            exit_code = bc.ExitCodes.FAIL
         volume_ids = [volume.id for volume in volumes]
         expire_snapshots(ec2, volume_ids, backup_set, args.backup_retention, args.no_origin_safeguard)
     except boto.exception.BotoServerError, e:
         log.error(e.error_message)
+        exit_code = bc.ExitCodes.FAIL
+    except bc.BotocrossAwaitTimeoutError, e:
+        log.error(e.message)
+        exit_code = bc.ExitCodes.FAIL
+
+sys.exit(exit_code)

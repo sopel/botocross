@@ -87,6 +87,12 @@ def build_filter_parser(resource_name, add_ids=True):
         parser.add_argument("-i", "--id", dest="resource_ids", action="append", help="A {0} id. [can be used multiple times]".format(resource_name))
     return parser
 
+def build_timeout_parser():
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--timeout", default='P1D',
+                        help="An ISO 8601 duration [default: 'P1D', i.e. one day]")
+    return parser
+
 def parse_credentials(args):
     return {'aws_access_key_id': args.aws_access_key_id, 'aws_secret_access_key': args.aws_secret_access_key}
 
@@ -117,3 +123,10 @@ def filter_regions_s3(regions, region):
 
 class ExitCodes:
     (OK, FAIL) = range(0, 2)
+
+class BotocrossAwaitTimeoutError(StandardError):
+    """
+    Timeout error when awaiting a resource transition.
+    """
+    def __init__(self, message):
+        Exception.__init__(self, message)

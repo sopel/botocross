@@ -56,6 +56,7 @@ setup(name="botocross",
       platforms="Posix; MacOS X; Windows",
       install_requires=[
         "boto >= 2.6.0",
+        "isodate >= 0.4.8",
       ],
       classifiers=[
           "Development Status :: 4 - Beta",
