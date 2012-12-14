@@ -29,7 +29,6 @@ ec2_log = logging.getLogger('botocross.ec2')
 
 AWAIT_TRANSITION_DELAY = 4
 AWAIT_TRANSITION_TIMEOUT = "P1D"
-DEFAULT_BACKUP_SET = "default"
 CREATED_BY_BOTO_EBS_SNAPSHOT_SCRIPT_SIGNATURE = "Created by Botocross EBS Snapshot Script from "
 CREATED_BY_BOTO_EC2_IMAGE_SCRIPT_SIGNATURE = "Created by Botocross EC2 Image Script from "
 IMAGE_STATES_PROGRESSING = { 'pending' }

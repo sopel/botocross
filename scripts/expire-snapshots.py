@@ -30,10 +30,8 @@ import logging
 
 # configure command line argument parsing
 parser = argparse.ArgumentParser(description='Expire snapshots of EBS volumes in all/some available EC2 regions',
-                                 parents=[bc.build_region_parser(), bc.build_filter_parser('EBS volume'), bc.build_common_parser()])
-parser.add_argument("-br", "--backup_retention", type=int, default=1, help="The number of backups to retain (correlated via backup_set). [default: 1]")
-parser.add_argument("-bs", "--backup_set", default=DEFAULT_BACKUP_SET, help="A backup set name (determines retention correlation). [default: 'default']")
-parser.add_argument("-ns", "--no_origin_safeguard", action="store_true", help="Allow deletion of snapshots originating from other tools. [default: False]")
+                                 parents=[bc.build_region_parser(), bc.build_filter_parser('EBS volume'),
+                                          bc.build_backup_parser('EBS volume', True, 1), bc.build_common_parser()])
 args = parser.parse_args()
 
 # process common command line arguments
@@ -42,13 +40,9 @@ bc.configure_logging(log, args.log_level)
 credentials = bc.parse_credentials(args)
 regions = bc.filter_regions(boto.ec2.regions(), args.region)
 filter = bc.build_filter(args.filter, args.exclude)
-log.info(args.resource_ids)
 
 # execute business logic
 log.info("Expire EBS snapshots")
-
-backup_set = args.backup_set if args.backup_set else DEFAULT_BACKUP_SET
-log.debug(backup_set)
 
 for region in regions:
     try:
@@ -62,6 +56,6 @@ for region in regions:
         if args.resource_ids:
             volume_ids.extend(args.resource_ids)
         print region.name + ": " + str(len(volumes)) + " volumes / " + str(len(volume_ids)) + " volume IDs"
-        expire_snapshots(ec2, volume_ids, backup_set, args.backup_retention, args.no_origin_safeguard)
+        expire_snapshots(ec2, volume_ids, args.backup_set, args.backup_retention, args.no_origin_safeguard)
     except boto.exception.BotoServerError, e:
         log.error(e.error_message)

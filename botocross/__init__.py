@@ -81,16 +81,30 @@ def build_region_parser():
 
 def build_filter_parser(resource_name, add_ids=True):
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("-f", "--filter", action="append", help="A {0} filter. [can be used multiple times]".format(resource_name))
-    parser.add_argument("-x", "--exclude", action="append", help="A {0} filter (matching ones are excluded). [can be used multiple times]".format(resource_name))
+    parser.add_argument("-f", "--filter", action="append",
+                        help="A {0} filter. [can be used multiple times]".format(resource_name))
+    parser.add_argument("-x", "--exclude", action="append",
+                        help="A {0} filter (matching ones are excluded). [can be used multiple times]".format(resource_name))
     if add_ids:
-        parser.add_argument("-i", "--id", dest="resource_ids", action="append", help="A {0} id. [can be used multiple times]".format(resource_name))
+        parser.add_argument("-i", "--id", dest="resource_ids", action="append",
+                            help="A {0} id. [can be used multiple times]".format(resource_name))
     return parser
 
-def build_timeout_parser():
+def build_backup_parser(resource_name, expire_only=False, backup_retention=None):
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("--timeout", default='P1D',
-                        help="An ISO 8601 duration [default: 'P1D', i.e. one day]")
+    if not expire_only:
+        parser.add_argument("-d", "--description",
+                            help="A description for the {0} [default: <provided>]".format(resource_name))
+    default_retention_help = str(backup_retention) if backup_retention else "None, i.e. don't expire"
+    parser.add_argument("-br", "--backup_retention", type=int, default=backup_retention,
+                        help="The number of backups to retain (correlated via backup_set). [default: {0}]".format(default_retention_help))
+    parser.add_argument("-bs", "--backup_set", default='default',
+                        help="A backup set name (determines retention correlation). [default: 'default'")
+    if not expire_only:
+        parser.add_argument("-bt", "--backup_timeout", default=None,
+                            help="Maximum duration to await successful resource creation - an ISO 8601 duration, e.g. 'PT8H' (8 hours). [default: None, i.e. don't await]")
+    parser.add_argument("-ns", "--no_origin_safeguard", action="store_true",
+                        help="Allow deletion of images originating from other tools. [default: False]")
     return parser
 
 def parse_credentials(args):
