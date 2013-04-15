@@ -69,7 +69,7 @@ def expire_snapshots(ec2, volume_ids, backup_set, backup_retention, no_origin_sa
                      " available, retaining " + str(backup_retention) + "):")
         # While snapshots are apparently returned in oldest to youngest order, this isn't documented;
         # therefore an explicit sort is performed to ensure this regardless.
-        num_snapshots = len(snapshots);
+        num_snapshots = len(snapshots)
         for snapshot in sorted(snapshots, key=attrgetter('start_time')):
             log.debug(snapshot.start_time)
             if num_snapshots <= backup_retention:
