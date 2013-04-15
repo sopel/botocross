@@ -24,6 +24,7 @@ import unittest
 log = logging.getLogger('botocross')
 
 class TestPackage(unittest.TestCase):
+    num_regions = 8;
 
     def test_configure_logging(self):
         from botocross import configure_logging
@@ -71,10 +72,10 @@ class TestPackage(unittest.TestCase):
 
     def test_filter_regions(self):
         from botocross import filter_regions
-        import boto.cloudformation
+        import boto.ec2
 
         log.info("Testing region filter:")
-        all_regions = boto.cloudformation.regions()
+        all_regions = boto.ec2.regions()
         filtered_regions = filter_regions(all_regions, "us-west-1")
         self.assertEquals(1, len(filtered_regions))
         filtered_regions = filter_regions(all_regions, "us-west")
@@ -84,7 +85,7 @@ class TestPackage(unittest.TestCase):
         filtered_regions = filter_regions(all_regions, "west")
         self.assertEquals(3, len(filtered_regions))
         filtered_regions = filter_regions(all_regions, None)
-        self.assertEquals(7, len(filtered_regions))
+        self.assertEquals(self.num_regions, len(filtered_regions))
 
     def test_filter_regions_s3(self):
         from botocross import filter_regions_s3
@@ -101,4 +102,4 @@ class TestPackage(unittest.TestCase):
         filtered_regions = filter_regions_s3(all_regions, "west")
         self.assertEquals(3, len(filtered_regions))
         filtered_regions = filter_regions_s3(all_regions, None)
-        self.assertEquals(7, len(filtered_regions))
+        self.assertEquals(self.num_regions, len(filtered_regions))
