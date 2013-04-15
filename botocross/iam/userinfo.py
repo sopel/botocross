@@ -23,6 +23,7 @@ import boto
 import botocross.iam
 import logging
 
+# pylint: disable=R0902,R0903
 class UserInfo:
     """
     Represents an AWS User
@@ -34,20 +35,23 @@ class UserInfo:
         # populate those attributes not leaked via the exception, if user has no permission for iam:GetUser
         self.path = botocross.iam.RESOURCE_UNAUTHORIZED
         self.create_date = botocross.iam.RESOURCE_UNAUTHORIZED
-        self.id = botocross.iam.RESOURCE_UNAUTHORIZED  # TODO: could be deduced from credentials in use instead.
+        self.id = botocross.iam.RESOURCE_UNAUTHORIZED  # REVIEW: could be deduced from credentials in use instead.
+        self.arn = None
+        self.name = None
 
     def __repr__(self):
-        return '<UserInfo - path:%s create_date:%s id:%s arn:%s name:%s>' % (self.path, self.create_date, self.id, self.arn, self.name)
+        template = '<UserInfo - path:%s create_date:%s id:%s arn:%s name:%s>'
+        return  template % (self.path, self.create_date, self.id, self.arn, self.name)
 
     def describe(self):
         try:
-            user = self.connection.get_user()
-            self.user = user['get_user_response']['get_user_result']['user']
-            self.path = self.user['path']
-            self.create_date = self.user['create_date']
-            self.id = self.user['user_id']
-            self.arn = self.user['arn']
-            self.name = self.user['user_name']
+            response = self.connection.get_user()
+            user = response['get_user_response']['get_user_result']['user']
+            self.path = user['path']
+            self.create_date = user['create_date']
+            self.id = user['user_id']
+            self.arn = user['arn']
+            self.name = user['user_name']
         except boto.exception.BotoServerError, e:
             # NOTE: given some information can be deduced from the exception still, the lack of permissions is
             # considered a normal condition still and the exception handled/logged accordingly.
@@ -64,7 +68,6 @@ if __name__ == "__main__":
     try:
         iam = boto.connect_iam()
         userInfo = UserInfo(iam)
-        user = userInfo.describe()
-        print user
+        print userInfo.describe()
     except boto.exception.BotoServerError, e:
         logging.exception(e.error_message)

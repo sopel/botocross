@@ -65,10 +65,11 @@ def expire_snapshots(ec2, volume_ids, backup_set, backup_retention, no_origin_sa
             snapshot_filters['description'] = CREATED_BY_BOTO_EBS_SNAPSHOT_SCRIPT_SIGNATURE + volume_id
         log.debug(snapshot_filters)
         snapshots = ec2.get_all_snapshots(owner='self', filters=snapshot_filters)
-        log.info("Deleting snapshots of " + volume_id + " (set '" + backup_set + "', " + str(len(snapshots)) + " available, retaining " + str(backup_retention) + "):")
+        log.info("Deleting snapshots of " + volume_id + " (set '" + backup_set + "', " + str(len(snapshots)) + 
+                     " available, retaining " + str(backup_retention) + "):")
         # While snapshots are apparently returned in oldest to youngest order, this isn't documented;
         # therefore an explicit sort is performed to ensure this regardless.
-        num_snapshots = len(snapshots);
+        num_snapshots = len(snapshots)
         for snapshot in sorted(snapshots, key=attrgetter('start_time')):
             log.debug(snapshot.start_time)
             if num_snapshots <= backup_retention:
@@ -101,7 +102,8 @@ def expire_images(ec2, instance_ids, backup_set, backup_retention, no_origin_saf
             image_filters['description'] = CREATED_BY_BOTO_EC2_IMAGE_SCRIPT_SIGNATURE + instance_id
         log.debug(image_filters)
         images = ec2.get_all_images(owners=['self'], filters=image_filters)
-        log.info("Deregistering images of " + instance_id + " (set '" + backup_set + "', " + str(len(images)) + " available, retaining " + str(backup_retention) + "):")
+        log.info("Deregistering images of " + instance_id + " (set '" + backup_set + "', " + str(len(images)) + 
+            " available, retaining " + str(backup_retention) + "):")
         # While images are apparently returned in oldest to youngest order, this isn't documented;
         # therefore an explicit sort is performed to ensure this regardless.
         num_images = len(images)
