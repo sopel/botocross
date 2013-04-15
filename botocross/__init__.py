@@ -46,7 +46,7 @@ def create_arn(iam, service, region, resource):
     account = accountInfo.describe()
     return 'arn:aws:' + service + ':' + region + ':' + account.id + ':' + resource
 
-# TODO: refactor to argparse custom action for inline usage!
+# REVIEW: refactor to argparse custom action for inline usage?!
 def build_filter(filter_args, exclude_args):
     return {'filters': build_filter_params(filter_args), 'excludes': build_filter_params(exclude_args)}
 
@@ -66,7 +66,7 @@ def build_filter_params(filter_args):
 
 def build_common_parser():
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("-v", "--verbose", action='store_true')  # TODO: drop in favor of a log formatter?!
+    parser.add_argument("-v", "--verbose", action='store_true')  # REVIEW: drop in favor of a log formatter?!
     parser.add_argument("--access_key_id", dest='aws_access_key_id', help="Your AWS Access Key ID")
     parser.add_argument("--secret_access_key", dest='aws_secret_access_key', help="Your AWS Secret Access Key")
     parser.add_argument("-l", "--log", dest='log_level', default='WARNING',
@@ -107,12 +107,12 @@ def filter_regions(regions, region):
         regions = filter(lambda x: is_region_selected(x, region), regions)
     return regions
 
-# TODO: remove this S3 legacy induced partial duplication, if possible.
+# REVIEW: remove this S3 legacy induced partial duplication, if possible.
 def is_region_selected_s3(region, name):
     from botocross.s3 import RegionMap
     return True if RegionMap[region].find(name) != -1 else False
 
-# TODO: remove this S3 legacy induced partial duplication, if possible.
+# REVIEW: remove this S3 legacy induced partial duplication, if possible.
 def filter_regions_s3(regions, region):
     if region:
         botocross_log.info("... (filtered by S3 region '" + region + "')")

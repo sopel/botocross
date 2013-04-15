@@ -34,7 +34,7 @@ class UserInfo:
         # populate those attributes not leaked via the exception, if user has no permission for iam:GetUser
         self.path = botocross.iam.RESOURCE_UNAUTHORIZED
         self.create_date = botocross.iam.RESOURCE_UNAUTHORIZED
-        self.id = botocross.iam.RESOURCE_UNAUTHORIZED  # TODO: could be deduced from credentials in use instead.
+        self.id = botocross.iam.RESOURCE_UNAUTHORIZED  # REVIEW: could be deduced from credentials in use instead.
         self.arn = None
         self.name = None
 

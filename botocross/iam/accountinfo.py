@@ -55,7 +55,7 @@ class AccountInfo:
                 raise
             self.log.debug(e.error_message)
         try:
-            # TODO: there should be a better way to retrieve the account id, which is 'leaked in the exception anyway
+            # REVIEW: there should be a better way to retrieve the account id, which is 'leaked in the exception anyway
             # eventually; see http://stackoverflow.com/questions/10197784 for a respective question.
             if not self.user:
                 from userinfo import UserInfo
