@@ -119,5 +119,6 @@ def filter_regions_s3(regions, region):
         regions = filter(lambda x: is_region_selected_s3(x, region), regions)
     return regions
 
+# pylint: disable=R0903
 class ExitCodes:
     (OK, FAIL) = range(0, 2)

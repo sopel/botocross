@@ -23,6 +23,7 @@ import boto
 import botocross.iam
 import logging
 
+# pylint: disable=R0902,R0903
 class UserInfo:
     """
     Represents an AWS User

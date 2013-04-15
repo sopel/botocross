@@ -23,6 +23,7 @@ import boto
 import botocross.iam
 import logging
 
+# pylint: disable=R0903
 class AccountInfo:
     """
     Represents an AWS Account
