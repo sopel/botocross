@@ -34,12 +34,12 @@ class AccountInfo:
         self.user = None
         # populate those attributes not leaked via the exception, if user has no permission for iam:ListAccountAliases
         self.alias = botocross.iam.RESOURCE_UNAUTHORIZED
+        self.id  = None
 
     def __repr__(self):
         return '<AccountInfo - alias:%s id:%s>' % (self.alias, self.id)
 
     def describe(self, user=None):
-        self.account = {}
         try:
             alias = self.connection.get_account_alias()
             aliases = alias['list_account_aliases_response']['list_account_aliases_result']['account_aliases']
