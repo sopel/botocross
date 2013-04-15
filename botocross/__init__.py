@@ -81,10 +81,14 @@ def build_region_parser():
 
 def build_filter_parser(resource_name, add_ids=True):
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("-f", "--filter", action="append", help="A {0} filter. [can be used multiple times]".format(resource_name))
-    parser.add_argument("-x", "--exclude", action="append", help="A {0} filter (matching ones are excluded). [can be used multiple times]".format(resource_name))
+    parser.add_argument("-f", "--filter", action="append",
+                                      help="A {0} filter. [can be used multiple times]".format(resource_name))
+    parser.add_argument("-x", "--exclude", action="append",
+                                      help="A {0} filter (matching ones are excluded). [can be used multiple times]"
+                                      .format(resource_name))
     if add_ids:
-        parser.add_argument("-i", "--id", dest="resource_ids", action="append", help="A {0} id. [can be used multiple times]".format(resource_name))
+        parser.add_argument("-i", "--id", dest="resource_ids", action="append",
+                                          help="A {0} id. [can be used multiple times]".format(resource_name))
     return parser
 
 def parse_credentials(args):

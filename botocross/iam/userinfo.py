@@ -37,7 +37,8 @@ class UserInfo:
         self.id = botocross.iam.RESOURCE_UNAUTHORIZED  # TODO: could be deduced from credentials in use instead.
 
     def __repr__(self):
-        return '<UserInfo - path:%s create_date:%s id:%s arn:%s name:%s>' % (self.path, self.create_date, self.id, self.arn, self.name)
+        template = '<UserInfo - path:%s create_date:%s id:%s arn:%s name:%s>'
+        return  template % (self.path, self.create_date, self.id, self.arn, self.name)
 
     def describe(self):
         try:
