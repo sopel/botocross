@@ -68,7 +68,6 @@ if __name__ == "__main__":
     try:
         iam = boto.connect_iam()
         userInfo = UserInfo(iam)
-        user = userInfo.describe()
-        print user
+        print userInfo.describe()
     except boto.exception.BotoServerError, e:
         logging.exception(e.error_message)
