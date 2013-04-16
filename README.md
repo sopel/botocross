@@ -3,8 +3,8 @@
 A Python package for operating cross region Amazon Web Services (AWS) resources.
 
 ## Status
-[![Build Status](https://secure.travis-ci.org/sopel/botocross.png?branch=master)](http://travis-ci.org/sopel/botocross) <br />
-[![Build Status](http://ci.labs.cityindex.com:8080/job/botocross/badge/icon)](http://ci.labs.cityindex.com:8080/job/botocross/) <- includes metrics
+
+[![Build Status](http://ci.labs.cityindex.com:8080/job/botocross/badge/icon)](http://ci.labs.cityindex.com:8080/job/botocross/)
 
 ## Introduction
 
