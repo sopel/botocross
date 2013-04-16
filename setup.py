@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 from distutils.core import setup
 from setuptools import find_packages
 import sys
@@ -64,6 +64,8 @@ setup(name="botocross",
           "License :: OSI Approved :: MIT License",
           "Operating System :: OS Independent",
           "Programming Language :: Python :: 2",
+          "Programming Language :: Python :: 2.5",
+          "Programming Language :: Python :: 2.6",
           "Programming Language :: Python :: 2.7",
           "Topic :: Internet",
           ],
