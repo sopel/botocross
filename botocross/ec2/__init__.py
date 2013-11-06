@@ -21,12 +21,22 @@
 
 from datetime import datetime
 from operator import attrgetter
+import botocross as bc
+import isodate
 import logging
+import time
 ec2_log = logging.getLogger('botocross.ec2')
 
-DEFAULT_BACKUP_SET = "default"
+AWAIT_TRANSITION_DELAY = 4
+AWAIT_TRANSITION_TIMEOUT = "P1D"
 CREATED_BY_BOTO_EBS_SNAPSHOT_SCRIPT_SIGNATURE = "Created by Botocross EBS Snapshot Script from "
 CREATED_BY_BOTO_EC2_IMAGE_SCRIPT_SIGNATURE = "Created by Botocross EC2 Image Script from "
+IMAGE_STATES_PROGRESSING = { 'pending' }
+IMAGE_STATES_SUCCEEDED = { 'available' }
+IMAGE_STATES_FAILED = { 'failed', 'deregistered' }
+SNAPSHOT_STATES_PROGRESSING = { 'pending' }
+SNAPSHOT_STATES_SUCCEEDED = { 'completed' }
+SNAPSHOT_STATES_FAILED = { 'error' }
 TAG_NAME = "Name"
 TAG_BACKUP_POLICY = "Backup Policy"
 
@@ -45,17 +55,63 @@ def derive_name(ec2, resource_id, iso_datetime=None, id_only=False):
     name += "." + iso_datetime.strftime("%Y%m%dT%H%M%SZ")
     return name
 
+def format_states(states):
+    return ', '.join(["{0}: {1}".format(k, len(v)) for (k, v) in states.iteritems()])
+
+def await_resources(ec2, resource_function, resource_type, state_field, timeout, delay):
+    log = ec2_log
+    duration = None
+    end = None
+    states = {}
+
+    if timeout:
+        duration = isodate.parse_duration(timeout)
+        end = datetime.now() + duration
+
+    while True:
+        states = {}
+        resources = resource_function()
+        for resource in resources:
+            states.setdefault(getattr(resource, state_field), []).append(resource)
+
+        # TODO: this should allow arbitrary resources via respective target state(s).
+        if not "pending" in states:
+            log.info("... {0} transitioned ({1})".format(resource_type, format_states(states)))
+            break
+
+        if end and datetime.now() > end:
+            message = "FAILED to transition all {0} after {2} ({1})!".format(resource_type, format_states(states),
+                                                                             isodate.duration_isoformat(duration))
+            log.info("... " + message)
+            raise bc.BotocrossAwaitTimeoutError(message)
+
+        log.info("... {0} still transitioning ({1}) ...".format(resource_type, format_states(states)))
+        time.sleep(delay)
+
+    return states
+
+def await_snapshots(ec2, snapshots, timeout=AWAIT_TRANSITION_TIMEOUT, delay=AWAIT_TRANSITION_DELAY):
+    def list_snapshots():
+        return ec2.get_all_snapshots(snapshot_ids=sorted(snapshots))
+
+    return await_resources(ec2, list_snapshots, "snapshots", "status", timeout=timeout, delay=delay)
+
 def create_snapshots(ec2, volumes, backup_set, description):
     log = ec2_log
+    snapshots = []
     for volume in volumes:
         signature = description if description else CREATED_BY_BOTO_EBS_SNAPSHOT_SCRIPT_SIGNATURE + volume.id
         log.debug("Description: " + signature)
-        response = ec2.create_snapshot(volume.id, description=signature)
+        snapshot = ec2.create_snapshot(volume.id, description=signature)
+        # NOTE: create_image() currently (boto 2.6.0) returns just the id rather than the resource as create_snapshots() does!
+        snapshots.append(snapshot.id)
 
         name = derive_name(ec2, volume.id)
         log.debug(TAG_NAME + ": " + name)
         tags = {TAG_NAME: name, TAG_BACKUP_POLICY: backup_set}
-        ec2.create_tags([response.id], tags)
+        ec2.create_tags([snapshot.id], tags)
+
+    return snapshots
 
 def expire_snapshots(ec2, volume_ids, backup_set, backup_retention, no_origin_safeguard=False):
     log = ec2_log
@@ -79,8 +135,15 @@ def expire_snapshots(ec2, volume_ids, backup_set, backup_retention, no_origin_sa
             log.info("... deleting snapshot '" + snapshot.id + "' ...")
             ec2.delete_snapshot(snapshot.id)
 
+def await_images(ec2, images, timeout=AWAIT_TRANSITION_TIMEOUT, delay=AWAIT_TRANSITION_DELAY):
+    def list_images():
+        return ec2.get_all_images(image_ids=sorted(images), owners=['self'])
+
+    return await_resources(ec2, list_images, "images", "state", timeout=timeout, delay=delay)
+
 def create_images(ec2, instances, backup_set, description, no_reboot=False):
     log = ec2_log
+    images = []
     for instance in instances:
         signature = description if description else CREATED_BY_BOTO_EC2_IMAGE_SCRIPT_SIGNATURE + instance.id
         log.debug("Description: " + signature)
@@ -88,11 +151,15 @@ def create_images(ec2, instances, backup_set, description, no_reboot=False):
         ami_name = derive_name(ec2, instance.id, iso_datetime, True)
         log.debug("AMI name: " + ami_name)
         image = ec2.create_image(instance.id, name=ami_name, description=signature, no_reboot=no_reboot)
+        # NOTE: create_image() currently (boto 2.6.0) returns just the id rather than the resource as create_snapshots() does!
+        images.append(image)
 
         name = derive_name(ec2, instance.id, iso_datetime)
         log.debug(TAG_NAME + ": " + name)
         tags = {TAG_NAME: name, TAG_BACKUP_POLICY: backup_set}
         ec2.create_tags([image], tags)
+
+    return images
 
 def expire_images(ec2, instance_ids, backup_set, backup_retention, no_origin_safeguard=False):
     log = ec2_log

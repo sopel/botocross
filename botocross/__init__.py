@@ -91,6 +91,23 @@ def build_filter_parser(resource_name, add_ids=True):
                                           help="A {0} id. [can be used multiple times]".format(resource_name))
     return parser
 
+def build_backup_parser(resource_name, expire_only=False, backup_retention=None):
+    parser = argparse.ArgumentParser(add_help=False)
+    if not expire_only:
+        parser.add_argument("-d", "--description",
+                            help="A description for the {0} [default: <provided>]".format(resource_name))
+    default_retention_help = str(backup_retention) if backup_retention else "None, i.e. don't expire"
+    parser.add_argument("-br", "--backup_retention", type=int, default=backup_retention,
+                        help="The number of backups to retain (correlated via backup_set). [default: {0}]".format(default_retention_help))
+    parser.add_argument("-bs", "--backup_set", default='default',
+                        help="A backup set name (determines retention correlation). [default: 'default'")
+    if not expire_only:
+        parser.add_argument("-bt", "--backup_timeout", default=None,
+                            help="Maximum duration to await successful resource creation - an ISO 8601 duration, e.g. 'PT8H' (8 hours). [default: None, i.e. don't await]")
+    parser.add_argument("-ns", "--no_origin_safeguard", action="store_true",
+                        help="Allow deletion of images originating from other tools. [default: False]")
+    return parser
+
 def parse_credentials(args):
     return {'aws_access_key_id': args.aws_access_key_id, 'aws_secret_access_key': args.aws_secret_access_key}
 
@@ -122,3 +139,10 @@ def filter_regions_s3(regions, region):
 # pylint: disable=R0903
 class ExitCodes:
     (OK, FAIL) = range(0, 2)
+
+class BotocrossAwaitTimeoutError(StandardError):
+    """
+    Timeout error when awaiting a resource transition.
+    """
+    def __init__(self, message):
+        Exception.__init__(self, message)
