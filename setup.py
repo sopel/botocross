@@ -9,7 +9,7 @@ if sys.version_info <= (2, 4):
     sys.exit(1)
 
 setup(name="botocross",
-      version="1.1.1",
+      version="1.2.0",
       author="Steffen Opel",
       packages=find_packages(),
       scripts=[
