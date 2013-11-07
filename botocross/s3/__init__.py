@@ -30,7 +30,8 @@ RegionMap = {
     'EU': 'eu-west-1',
     'APNortheast': 'ap-northeast-1',
     'APSoutheast': 'ap-southeast-1',
-    'APSoutheast2': 'ap-southeast-2'}
+    'APSoutheast2': 'ap-southeast-2',
+    'USGovWest': 'us-gov-west-1'}
 
 # NOTE: S3 region handling differs in an unfortunate way (likely a legacy issue) and requires special treatment.
 def class_iterator(Class):

@@ -39,7 +39,7 @@ args = parser.parse_args()
 log = logging.getLogger('botocross')
 bc.configure_logging(log, args.log_level)
 credentials = bc.parse_credentials(args)
-locations = bc.filter_regions_s3(class_iterator(Location), args.region)
+locations = bc.filter_regions_s3(class_iterator(Location), args.region, args.include_govcloud, args.only_govcloud)
 
 # execute business logic
 log.info("Creating S3 buckets named '" + args.bucket + "':")

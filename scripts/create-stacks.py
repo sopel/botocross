@@ -45,7 +45,7 @@ args = parser.parse_args()
 log = logging.getLogger('botocross')
 bc.configure_logging(log, args.log_level)
 credentials = bc.parse_credentials(args)
-regions = bc.filter_regions(boto.cloudformation.regions(), args.region)
+regions = bc.filter_regions(boto.cloudformation.regions(), args.region, args.include_govcloud, args.only_govcloud)
 
 def processParameter(parameter, region_name, account_id):
     replacement = parameter[1].replace('{REGION}', region_name).replace('{ACCOUNT}', account_id)
