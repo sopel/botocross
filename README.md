@@ -27,7 +27,7 @@ but still in it's early stages and mainly demand driven - therefore the AWS API 
 
 The scripts are based on [Python 2.7](http://python.org/) and have the following dependencies (handled automatically if installed via pip, see below):
 
-* A recent version of [boto](https://github.com/boto/boto) (tested against 2.6.0), which provides the interface to Amazon Web Services
+* A recent version of [boto](https://github.com/boto/boto) (tested against 2.15.0), which provides the interface to Amazon Web Services
 
 ## Installation
 

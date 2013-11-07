@@ -77,6 +77,8 @@ def build_common_parser():
 def build_region_parser():
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("-r", "--region", help="A region substring selector (e.g. 'us-west')")
+    parser.add_argument("--include_govcloud", action='store_true', help="Include 'GovCloud' regions. [default: False]")
+    parser.add_argument("--only_govcloud", action='store_true', help="Return only 'GovCloud' region(s). [default: False]")
     return parser
 
 def build_filter_parser(resource_name, add_ids=True):
@@ -114,11 +116,18 @@ def parse_credentials(args):
 def is_region_selected(region, name):
     return True if region.name.find(name) != -1 else False
 
+def is_govcloud(region):
+    return True if region.name.find('gov') != -1 else False
+
 def filter_list_by_attribute(includes, excludes, attribute):
     excluded_ids = set([getattr(exclude, attribute) for exclude in excludes])
     return [include for include in includes if getattr(include, attribute) not in excluded_ids]
 
-def filter_regions(regions, region):
+def filter_regions(regions, region, include_govcloud=False, only_govcloud=False):
+    if not (include_govcloud or only_govcloud):
+        regions = filter(lambda x: not is_govcloud(x), regions)
+    if only_govcloud:
+        regions = filter(lambda x: is_govcloud(x), regions)
     if region:
         botocross_log.info("... (filtered by region '" + region + "')")
         regions = filter(lambda x: is_region_selected(x, region), regions)
@@ -130,7 +139,16 @@ def is_region_selected_s3(region, name):
     return True if RegionMap[region].find(name) != -1 else False
 
 # REVIEW: remove this S3 legacy induced partial duplication, if possible.
-def filter_regions_s3(regions, region):
+def is_govcloud_s3(region):
+    from botocross.s3 import RegionMap
+    return True if RegionMap[region].find('gov') != -1 else False
+
+# REVIEW: remove this S3 legacy induced partial duplication, if possible.
+def filter_regions_s3(regions, region, include_govcloud=False, only_govcloud=False):
+    if not (include_govcloud or only_govcloud):
+        regions = filter(lambda x: not is_govcloud_s3(x), regions)
+    if only_govcloud:
+        regions = filter(lambda x: is_govcloud_s3(x), regions)
     if region:
         botocross_log.info("... (filtered by S3 region '" + region + "')")
         regions = filter(lambda x: is_region_selected_s3(x, region), regions)

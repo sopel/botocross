@@ -38,7 +38,7 @@ args = parser.parse_args()
 log = logging.getLogger('botocross')
 bc.configure_logging(log, args.log_level)
 credentials = bc.parse_credentials(args)
-regions = bc.filter_regions(boto.sns.regions(), args.region)
+regions = bc.filter_regions(boto.sns.regions(), args.region, args.include_govcloud, args.only_govcloud)
 
 # execute business logic
 log.info("Creating SNS topics named '" + args.topic + "':")
