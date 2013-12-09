@@ -164,3 +164,7 @@ class BotocrossAwaitTimeoutError(StandardError):
     """
     def __init__(self, message):
         Exception.__init__(self, message)
+
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions

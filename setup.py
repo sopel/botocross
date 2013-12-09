@@ -2,6 +2,11 @@
 from distutils.core import setup
 from setuptools import find_packages
 import sys
+import versioneer
+versioneer.versionfile_source = 'botocross/_version.py'
+versioneer.versionfile_build = 'botocross/_version.py'
+versioneer.tag_prefix = '' # tags are like 1.2.0
+versioneer.parentdir_prefix = 'botocross-' # dirname like 'myproject-1.2.0'
 
 if sys.version_info <= (2, 4):
     error = "ERROR: botocross requires Python Version 2.5 or above...exiting."
@@ -9,9 +14,11 @@ if sys.version_info <= (2, 4):
     sys.exit(1)
 
 setup(name="botocross",
-      version="1.2.0",
+      version=versioneer.get_version(),
+      cmdclass=versioneer.get_cmdclass(),
       author="Steffen Opel",
-      packages=find_packages(),
+      url="https://github.com/sopel/botocross/",
+      packages=find_packages(exclude=['tests*']),
       scripts=[
         'scripts/authorize-securitygroups.py',
         'scripts/create-buckets.py',
