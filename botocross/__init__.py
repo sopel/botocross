@@ -65,6 +65,7 @@ def build_filter_params(filter_args):
     return params
 
 def build_common_parser():
+    from botocross import __version__
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("-v", "--verbose", action='store_true')  # REVIEW: drop in favor of a log formatter?!
     parser.add_argument("--access_key_id", dest='aws_access_key_id', help="Your AWS Access Key ID")
@@ -72,6 +73,7 @@ def build_common_parser():
     parser.add_argument("-l", "--log", dest='log_level', default='WARNING',
                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         help="The logging level to use. [default: WARNING]")
+    parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
     return parser
 
 def build_region_parser():
