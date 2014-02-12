@@ -40,7 +40,7 @@ args = parser.parse_args()
 log = logging.getLogger('botocross')
 bc.configure_logging(log, args.log_level)
 credentials = bc.parse_credentials(args)
-regions = bc.filter_regions(boto.ec2.regions(), args.region, args.include_govcloud, args.only_govcloud)
+regions = bc.filter_regions(boto.ec2.regions(), args.region)
 
 # execute business logic
 groupname = args.name if args.name else ""

@@ -79,8 +79,6 @@ def build_common_parser():
 def build_region_parser():
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("-r", "--region", help="A region substring selector (e.g. 'us-west')")
-    parser.add_argument("--include_govcloud", action='store_true', help="Include 'GovCloud' regions. [default: False]")
-    parser.add_argument("--only_govcloud", action='store_true', help="Return only 'GovCloud' region(s). [default: False]")
     return parser
 
 def build_filter_parser(resource_name, add_ids=True):
