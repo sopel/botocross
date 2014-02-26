@@ -22,9 +22,9 @@
 import unittest
 
 class S3PackageTest(unittest.TestCase):
-    num_regions = 9;
+    num_regions = 10;
 
     def test_region_map(self):
         from botocross.s3 import RegionMap
 
-        self.assertTrue(self.num_regions == len(RegionMap))
+        self.assertEquals(self.num_regions, len(RegionMap))
