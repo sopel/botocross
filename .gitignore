@@ -1,3 +1,4 @@
+.ignore
 .virtualenv
 botocross.egg-info
 build
