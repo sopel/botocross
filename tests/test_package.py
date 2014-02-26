@@ -24,8 +24,10 @@ import unittest
 log = logging.getLogger('botocross')
 
 class TestPackage(unittest.TestCase):
-    num_regions = 9;
+    num_regions = 10;
+    num_regions_global = 8;
     num_regions_gov = 1;
+    num_regions_cn = 1;
 
     def test_configure_logging(self):
         from botocross import configure_logging
@@ -71,104 +73,132 @@ class TestPackage(unittest.TestCase):
             self.assertTrue(isinstance(v, list))
             self.assertEquals(2, len(v))
 
-    def test_filter_regions(self):
-        from botocross import filter_regions
-        import boto.ec2
+    def test_region_numbers(self):
+        self.assertEquals(self.num_regions , self.num_regions_global + self.num_regions_gov + self.num_regions_cn)
 
-        log.info("Testing region filter (GovCloud excluded):")
-        all_regions = boto.ec2.regions()
-        filtered_regions = filter_regions(all_regions, "us-west-1")
+    def filter_regions_all(self, regions, filter):
+        log.info("... [All]")
+
+        filtered_regions = filter(regions, "us-west-1")
         self.assertEquals(1, len(filtered_regions))
-        filtered_regions = filter_regions(all_regions, "us-west")
+        filtered_regions = filter(regions, "us-west")
         self.assertEquals(2, len(filtered_regions))
-        filtered_regions = filter_regions(all_regions, "west-1")
+        filtered_regions = filter(regions, "west")
+        self.assertEquals(4, len(filtered_regions))
+        filtered_regions = filter(regions, "")
+        self.assertEquals(self.num_regions, len(filtered_regions))
+        filtered_regions = filter(regions, None)
+        self.assertEquals(self.num_regions , len(filtered_regions))
+
+    def filter_regions_global_only(self, regions, filter):
+        log.info("... [Global only]")
+
+        filtered_regions = filter(regions, "us-west-1")
+        self.assertEquals(1, len(filtered_regions))
+        filtered_regions = filter(regions, "us-west")
         self.assertEquals(2, len(filtered_regions))
-        filtered_regions = filter_regions(all_regions, "west")
+        filtered_regions = filter(regions, "west")
+        self.assertEquals(4, len(filtered_regions))
+        filtered_regions = filter(regions, "(ap|eu|sa|us)-[enws]")
+        self.assertEquals(self.num_regions_global, len(filtered_regions))
+
+    def filter_regions_gov_excluded(self, regions, filter):
+        log.info("... [GovCloud excluded]")
+
+        filtered_regions = filter(regions, "us-west-1")
+        self.assertEquals(1, len(filtered_regions))
+        filtered_regions = filter(regions, "us-west")
+        self.assertEquals(2, len(filtered_regions))
+        filtered_regions = filter(regions, "(?<!gov)-west-1")
+        self.assertEquals(2, len(filtered_regions))
+        filtered_regions = filter(regions, "(?<!gov)-west")
         self.assertEquals(3, len(filtered_regions))
-        filtered_regions = filter_regions(all_regions, None)
+        filtered_regions = filter(regions, "(?<!gov)-[nwse]")
         self.assertEquals(self.num_regions - self.num_regions_gov, len(filtered_regions))
 
-    def test_filter_regions_gov_included(self):
-        from botocross import filter_regions
-        import boto.ec2
+    def filter_regions_gov_included(self, regions, filter):
+        log.info("... [GovCloud included]")
 
-        log.info("Testing region filter (GovCloud included):")
-        all_regions = boto.ec2.regions()
-        filtered_regions = filter_regions(all_regions, "us-west-1", True, False)
-        self.assertEquals(1, len(filtered_regions))
-        filtered_regions = filter_regions(all_regions, "us-west", True, False)
+        filtered_regions = filter(regions, "us.*-west-1")
         self.assertEquals(2, len(filtered_regions))
-        filtered_regions = filter_regions(all_regions, "west-1", True, False)
+        filtered_regions = filter(regions, "us.*-west")
         self.assertEquals(3, len(filtered_regions))
-        filtered_regions = filter_regions(all_regions, "west", True, False)
+        filtered_regions = filter(regions, "west-1")
+        self.assertEquals(3, len(filtered_regions))
+        filtered_regions = filter(regions, "west")
         self.assertEquals(4, len(filtered_regions))
-        filtered_regions = filter_regions(all_regions, None, True, False)
+        filtered_regions = filter(regions, None)
         self.assertEquals(self.num_regions, len(filtered_regions))
 
-    def test_filter_regions_gov_only(self):
-        from botocross import filter_regions
+    def filter_regions_gov_only(self, regions, filter):
+        log.info("... [GovCloud only]")
+
+        filtered_regions = filter(regions, "us-gov-west-1")
+        self.assertEquals(1, len(filtered_regions))
+        filtered_regions = filter(regions, "us-gov-west")
+        self.assertEquals(1, len(filtered_regions))
+        filtered_regions = filter(regions, "gov-west")
+        self.assertEquals(1, len(filtered_regions))
+        filtered_regions = filter(regions, "gov")
+        self.assertEquals(self.num_regions_gov, len(filtered_regions))
+
+    def filter_regions_cn_excluded(self, regions, filter):
+        log.info("... [China excluded]")
+
+        filtered_regions = filter(regions, "ap-northeast-1")
+        self.assertEquals(1, len(filtered_regions))
+        filtered_regions = filter(regions, "ap-northeast")
+        self.assertEquals(1, len(filtered_regions))
+        filtered_regions = filter(regions, "(?<!cn)-north")
+        self.assertEquals(1, len(filtered_regions))
+        filtered_regions = filter(regions, "(?<!cn)-[nwse]")
+        self.assertEquals(self.num_regions - self.num_regions_cn, len(filtered_regions))
+
+    def filter_regions_cn_included(self, regions, filter):
+        log.info("... [China included]")
+
+        filtered_regions = filter(regions, "cn-north-1")
+        self.assertEquals(1, len(filtered_regions))
+        filtered_regions = filter(regions, "cn-north")
+        self.assertEquals(1, len(filtered_regions))
+        filtered_regions = filter(regions, "north-1")
+        self.assertEquals(1, len(filtered_regions))
+        filtered_regions = filter(regions, "north")
+        self.assertEquals(2, len(filtered_regions))
+        filtered_regions = filter(regions, None)
+        self.assertEquals(self.num_regions, len(filtered_regions))
+
+    def filter_regions_cn_only(self, regions, filter):
+        log.info("... [China only]")
+
+        filtered_regions = filter(regions, "cn-north-1")
+        self.assertEquals(1, len(filtered_regions))
+        filtered_regions = filter(regions, "cn-north")
+        self.assertEquals(1, len(filtered_regions))
+        filtered_regions = filter(regions, "cn")
+        self.assertEquals(self.num_regions_cn, len(filtered_regions))
+
+    def filter_regions(self, regions, filter):
+        self.filter_regions_all(regions, filter)
+        self.filter_regions_global_only(regions, filter)
+        self.filter_regions_gov_excluded(regions, filter)
+        self.filter_regions_gov_included(regions, filter)
+        self.filter_regions_gov_only(regions, filter)
+        self.filter_regions_cn_excluded(regions, filter)
+        self.filter_regions_cn_included(regions, filter)
+        self.filter_regions_cn_only(regions, filter)
+
+    def test_filter_regions(self):
+        from botocross import filter_regions as filter
         import boto.ec2
 
-        log.info("Testing region filter (GovCloud only):")
-        all_regions = boto.ec2.regions()
-        filtered_regions = filter_regions(all_regions, "us-gov-west-1", False, True)
-        self.assertEquals(1, len(filtered_regions))
-        filtered_regions = filter_regions(all_regions, "us-gov-west", False, True)
-        self.assertEquals(1, len(filtered_regions))
-        filtered_regions = filter_regions(all_regions, "gov-west", False, True)
-        self.assertEquals(1, len(filtered_regions))
-        filtered_regions = filter_regions(all_regions, "gov", False, True)
-        self.assertEquals(1, len(filtered_regions))
-        filtered_regions = filter_regions(all_regions, None, False, True)
-        self.assertEquals(self.num_regions_gov, len(filtered_regions))
+        log.info("Testing region filters:")
+        regions = boto.ec2.regions()
+        self.filter_regions(regions, filter)
 
     def test_filter_regions_s3(self):
-        from botocross import filter_regions_s3
-        from botocross.s3 import RegionMap
+        from botocross import filter_regions_s3 as filter
+        from botocross.s3 import RegionMap as regions
 
-        log.info("Testing S3 region filter (GovCloud excluded):")
-        all_regions = RegionMap
-        filtered_regions = filter_regions_s3(all_regions, "us-west-1")
-        self.assertEquals(1, len(filtered_regions))
-        filtered_regions = filter_regions_s3(all_regions, "us-west")
-        self.assertEquals(2, len(filtered_regions))
-        filtered_regions = filter_regions_s3(all_regions, "west-1")
-        self.assertEquals(2, len(filtered_regions))
-        filtered_regions = filter_regions_s3(all_regions, "west")
-        self.assertEquals(3, len(filtered_regions))
-        filtered_regions = filter_regions_s3(all_regions, None)
-        self.assertEquals(self.num_regions - self.num_regions_gov, len(filtered_regions))
-
-    def test_filter_regions_s3_gov_included(self):
-        from botocross import filter_regions_s3
-        from botocross.s3 import RegionMap
-
-        log.info("Testing S3 region filter (GovCloud included):")
-        all_regions = RegionMap
-        filtered_regions = filter_regions_s3(all_regions, "us-gov-west-1", True, False)
-        self.assertEquals(1, len(filtered_regions))
-        filtered_regions = filter_regions_s3(all_regions, "us-gov-west", True, False)
-        self.assertEquals(1, len(filtered_regions))
-        filtered_regions = filter_regions_s3(all_regions, "gov-west", True, False)
-        self.assertEquals(1, len(filtered_regions))
-        filtered_regions = filter_regions_s3(all_regions, "gov", True, False)
-        self.assertEquals(1, len(filtered_regions))
-        filtered_regions = filter_regions_s3(all_regions, None, True, False)
-        self.assertEquals(self.num_regions, len(filtered_regions))
-
-    def test_filter_regions_s3_gov_only(self):
-        from botocross import filter_regions_s3
-        from botocross.s3 import RegionMap
-
-        log.info("Testing S3 region filter (GovCloud only):")
-        all_regions = RegionMap
-        filtered_regions = filter_regions_s3(all_regions, "us-gov-west-1", False, True)
-        self.assertEquals(1, len(filtered_regions))
-        filtered_regions = filter_regions_s3(all_regions, "us-gov-west", False, True)
-        self.assertEquals(1, len(filtered_regions))
-        filtered_regions = filter_regions_s3(all_regions, "gov-west", False, True)
-        self.assertEquals(1, len(filtered_regions))
-        filtered_regions = filter_regions_s3(all_regions, "gov", False, True)
-        self.assertEquals(1, len(filtered_regions))
-        filtered_regions = filter_regions_s3(all_regions, None, False, True)
-        self.assertEquals(self.num_regions_gov, len(filtered_regions))
+        log.info("Testing S3 region filters:")
+        self.filter_regions(regions, filter)

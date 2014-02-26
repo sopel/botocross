@@ -60,7 +60,7 @@ setup(name="botocross",
       license="MIT",
       platforms="Posix; MacOS X; Windows",
       install_requires=[
-        "boto >= 2.15.0",
+        "boto >= 2.24.0",
         "isodate >= 0.4.8",
       ],
       classifiers=[
