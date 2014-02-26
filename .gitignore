@@ -1,5 +1,5 @@
+.virtualenv
 botocross.egg-info
 build
 dist
-virtualenv*/
 *.pyc
