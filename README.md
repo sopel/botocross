@@ -4,7 +4,11 @@ A Python package for operating cross region Amazon Web Services (AWS) resources.
 
 ## Status
 
-[![Build Status](http://ci.labs.cityindex.com:8080/job/botocross/badge/icon)](http://ci.labs.cityindex.com:8080/job/botocross/)
+![Lifecycle: sunset](https://img.shields.io/badge/lifecycle-sunset-blue.svg) ![Support: unsupported](https://img.shields.io/badge/support-unsupported-yellow.svg) ![Maintenance: maintained](https://img.shields.io/badge/maintenance-maintained-green.svg)
+
+This project is being sunsetted and is no longer supported.
+* the project's goals have been mostly obsoleted by the excellent [AWS Command Line Interface (AWS CLI)](https://github.com/aws/aws-cli) - remaining unique functionality should probably be implemented as an AWS CLI plugin, see [botocross/issues/44](https://github.com/sopel/botocross/issues/44) for details
+* if you should choose to fork it, please let us know so we can link to your project
 
 ## Introduction
 
